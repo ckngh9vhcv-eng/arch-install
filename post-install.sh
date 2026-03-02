@@ -28,17 +28,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # =============================================================================
 header "Installing paru"
 
-if command -v paru &>/dev/null; then
+if paru --version &>/dev/null; then
     info "paru already installed"
 else
-    info "Building paru from AUR..."
+    # Build from source (not paru-bin) to link against the actual libalpm
+    # on the system — CachyOS ships a newer pacman/libalpm than stock Arch.
+    info "Building paru from source..."
     cd /tmp
-    rm -rf paru-bin
-    git clone https://aur.archlinux.org/paru-bin.git
-    cd paru-bin
+    rm -rf paru
+    git clone https://aur.archlinux.org/paru.git
+    cd paru
     makepkg -si --noconfirm
     cd /tmp
-    rm -rf paru-bin
+    rm -rf paru
     info "paru installed"
 fi
 
