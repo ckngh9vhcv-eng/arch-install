@@ -157,18 +157,6 @@ elif [[ "$CPU_TYPE" == "intel" ]]; then
 fi
 
 # =============================================================================
-# User Creation
-# =============================================================================
-header "Creating User"
-
-useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash mike
-
-echo "Set password for mike:"
-passwd mike
-
-info "User mike created with groups: wheel, docker, video, audio, libvirt, input"
-
-# =============================================================================
 # Sudo
 # =============================================================================
 header "Configuring Sudo"
@@ -188,6 +176,18 @@ OFFICIAL_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/official.txt" | grep -v '^
 pacman -S --noconfirm --needed $OFFICIAL_PKGS
 
 info "Official packages installed"
+
+# =============================================================================
+# User Creation (after packages so docker/libvirt groups exist)
+# =============================================================================
+header "Creating User"
+
+useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash mike
+
+echo "Set password for mike:"
+passwd mike
+
+info "User mike created with groups: wheel, docker, video, audio, libvirt, input"
 
 # =============================================================================
 # GPU Drivers
