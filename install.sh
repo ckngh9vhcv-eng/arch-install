@@ -190,8 +190,7 @@ cat /mnt/etc/fstab
 # =============================================================================
 # Pass Hardware Detection to Chroot
 # =============================================================================
-mkdir -p /mnt/tmp
-cat > /mnt/tmp/hw-detect <<EOF
+cat > /mnt/root/hw-detect <<EOF
 GPU_TYPE=$GPU_TYPE
 CPU_TYPE=$CPU_TYPE
 ROOT_PART=$ROOT_PART

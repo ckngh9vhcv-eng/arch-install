@@ -20,7 +20,7 @@ header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
 SCRIPT_DIR="/root/arch-install"
 
 # Load hardware detection
-source /tmp/hw-detect
+source /root/hw-detect
 
 # =============================================================================
 # Locale & Timezone
