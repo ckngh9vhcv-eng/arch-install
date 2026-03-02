@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Launch Dolphin
+Exec=dolphin
+Icon=system-file-manager
+X-KDE-GlobalAccel-CommandShortcut=true

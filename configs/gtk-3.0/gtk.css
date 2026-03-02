@@ -1,0 +1,43 @@
+.background {
+    background-color: #141418;
+}
+
+headerbar {
+    background-color: #0f0f13;
+}
+
+.view, iconview, treeview.view {
+    background-color: #121216;
+}
+
+textview text {
+    background-color: #121216;
+}
+
+textview border {
+    background-color: #1c1c22;
+}
+
+placessidebar, .sidebar {
+    background-color: #101014;
+}
+
+menu, .menu, .popup {
+    background-color: #181820;
+}
+
+toolbar, .toolbar, statusbar {
+    background-color: #0f0f13;
+}
+
+notebook > header {
+    background-color: #0f0f13;
+}
+
+notebook > stack {
+    background-color: #141418;
+}
+
+popover, popover.background {
+    background-color: #181820;
+}

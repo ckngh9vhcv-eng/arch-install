@@ -1,0 +1,38 @@
+# Browser
+brave-bin
+
+# Apps
+spotify
+obsidian-bin
+visual-studio-code-bin
+vesktop-bin
+parsec-bin
+moonlight-qt
+
+# Gaming
+lutris
+protonplus
+faugus-launcher
+heroic-games-launcher-bin
+prismlauncher
+
+# Emulators
+retroarch
+dolphin-emu
+pcsx2
+rpcs3-bin
+ppsspp
+cemu
+ryubing
+mgba-qt
+melonds
+scummvm
+
+# KDE Theming
+klassy
+plasma6-applets-panel-colorizer
+
+# GTK/Icon/Cursor Theming
+tela-circle-icon-theme-git
+bibata-cursor-theme
+layan-gtk-theme

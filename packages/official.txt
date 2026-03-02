@@ -1,0 +1,122 @@
+# Filesystem & Boot
+efibootmgr
+snapper
+snap-pac
+
+# Networking
+networkmanager
+tailscale
+openssh
+wireguard-tools
+openresolv
+
+# Audio
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+
+# Bluetooth
+bluez
+bluez-utils
+
+# KDE Plasma + Login Manager
+plasma-desktop
+plasma-login-manager
+plasma-wayland-protocols
+
+# Hyprland
+hyprland
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-kde
+
+# Hyprland utilities
+waybar
+wofi
+dunst
+hyprpaper
+hyprlock
+wl-clipboard
+grim
+slurp
+playerctl
+brightnessctl
+wlogout
+networkmanager-applet
+lxqt-policykit
+cliphist
+
+# Terminal & Shell
+kitty
+bash-completion
+starship
+fzf
+direnv
+
+# Fonts
+noto-fonts
+noto-fonts-cjk-sc
+noto-fonts-emoji
+ttf-firacode-nerd
+ttf-cascadia-code
+ttf-jetbrains-mono-nerd
+
+# Theming
+qt6ct
+breeze-icons
+breeze-gtk
+adw-gtk3
+
+# CLI Tools
+fastfetch
+ripgrep
+fd
+jq
+tree
+unzip
+htop
+btop
+neovim
+gcc
+make
+python
+nodejs
+npm
+github-cli
+git
+wget
+curl
+
+# Gaming
+steam
+gamemode
+lib32-mesa
+lib32-vulkan-radeon
+mangohud
+lib32-mangohud
+wine-staging
+winetricks
+
+# Containers & VMs
+docker
+docker-compose
+qemu-full
+libvirt
+virt-manager
+dnsmasq
+swtpm
+
+# Media & Apps
+obs-studio
+thunar
+flatpak
+
+# System
+cifs-utils
+udisks2
+bc
+polkit
+tlp
+pavucontrol
+zram-generator

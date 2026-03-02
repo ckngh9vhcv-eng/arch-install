@@ -1,0 +1,24 @@
+[kwin]
+Edit Tiles=none,Meta+T,Toggle Tiles Editor
+Window Close=Meta+Q\tAlt+F4,Alt+F4,Close Window
+
+[org.kde.powerdevil]
+powerProfile=none,Battery\tMeta+B,Switch Power Profile
+
+[org_kde_powerdevil]
+powerProfile=none,Battery\tMeta+B,Switch Power Profile
+
+[plasmashell]
+manage activities=none,Meta+Q,Show Activity Switcher
+
+[launch-brave.desktop]
+_k_friendly_name=Launch Brave
+_launch=Meta+B,none,Launch Brave
+
+[launch-kitty.desktop]
+_k_friendly_name=Launch Kitty
+_launch=Meta+T,none,Launch Kitty
+
+[launch-dolphin.desktop]
+_k_friendly_name=Launch Dolphin
+_launch=Meta+F,none,Launch Dolphin
