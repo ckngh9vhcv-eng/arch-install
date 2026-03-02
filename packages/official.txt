@@ -21,9 +21,9 @@ wireplumber
 bluez
 bluez-utils
 
-# KDE Plasma + Login Manager
+# KDE Plasma + Display Manager
 plasma-desktop
-plasma-login-manager
+sddm
 plasma-wayland-protocols
 
 # Hyprland
