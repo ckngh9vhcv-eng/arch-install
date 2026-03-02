@@ -233,21 +233,21 @@ systemctl enable tailscaled.service
 info "System services enabled"
 
 # =============================================================================
-# SDDM Display Manager
+# Plasma Login Manager
 # =============================================================================
-header "Configuring SDDM"
+header "Configuring Plasma Login Manager"
 
-systemctl enable sddm.service
+systemctl enable plasmalogin.service
 
 # Autologin config
-mkdir -p /etc/sddm.conf.d
-cat > /etc/sddm.conf.d/autologin.conf <<EOF
+mkdir -p /etc/plasmalogin.conf.d
+cat > /etc/plasmalogin.conf.d/autologin.conf <<EOF
 [Autologin]
 User=mike
 Session=plasma.desktop
 EOF
 
-info "SDDM enabled with autologin for mike"
+info "Plasma Login Manager enabled with autologin for mike"
 
 # =============================================================================
 # Zram
