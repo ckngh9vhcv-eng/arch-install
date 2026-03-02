@@ -31,6 +31,9 @@ header "Installing paru"
 if paru --version &>/dev/null; then
     info "paru already installed"
 else
+    # Remove paru-bin if present (conflicts with source-built paru)
+    sudo pacman -R --noconfirm paru-bin 2>/dev/null || true
+
     # Build from source (not paru-bin) to link against the actual libalpm
     # on the system — CachyOS ships a newer pacman/libalpm than stock Arch.
     info "Building paru from source..."
