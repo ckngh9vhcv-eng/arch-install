@@ -33,8 +33,11 @@ header "Preflight Checks"
 
 # Internet connectivity
 info "Checking internet connectivity..."
-ping -c 1 -W 3 archlinux.org &>/dev/null || error "No internet connection. Connect first (iwctl or ethernet)."
-info "Internet OK"
+if ping -c 1 -W 3 1.1.1.1 &>/dev/null || ping -c 1 -W 3 8.8.8.8 &>/dev/null; then
+    info "Internet OK"
+else
+    error "No internet connection. Connect first (iwctl or ethernet)."
+fi
 
 # =============================================================================
 # Hardware Detection
