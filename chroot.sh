@@ -35,6 +35,9 @@ locale-gen
 
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
+# Create vconsole.conf (needed by mkinitcpio sd-vconsole hook)
+echo "KEYMAP=us" > /etc/vconsole.conf
+
 info "Timezone: America/Chicago"
 info "Locale: en_US.UTF-8"
 
@@ -74,7 +77,9 @@ cd /tmp
 rm -rf cachyos-repo cachyos-repo.tar.xz
 
 info "Syncing package databases with CachyOS repos..."
-pacman -Syu --noconfirm
+# || true: post-transaction hooks (mkinitcpio) may return non-zero on first run;
+# we regenerate initramfs properly after installing the CachyOS kernel below.
+pacman -Syu --noconfirm || true
 
 # =============================================================================
 # CachyOS Kernel
