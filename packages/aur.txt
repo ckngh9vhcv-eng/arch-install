@@ -23,7 +23,7 @@ pcsx2
 rpcs3-bin
 ppsspp
 cemu
-ryubing
+ryujinx
 mgba-qt
 melonds
 scummvm

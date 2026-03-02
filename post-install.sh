@@ -55,7 +55,9 @@ header "Installing AUR Packages"
 # Read AUR package list (strip comments and blank lines)
 AUR_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/aur.txt" | grep -v '^\s*$' | tr '\n' ' ')
 
-paru -S --noconfirm --needed $AUR_PKGS
+# --skipreview: don't prompt to review PKGBUILDs
+# --noconfirm: auto-accept provider selection (picks default=1)
+paru -S --noconfirm --needed --skipreview $AUR_PKGS
 
 info "AUR packages installed"
 
