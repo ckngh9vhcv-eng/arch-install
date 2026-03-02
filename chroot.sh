@@ -77,6 +77,12 @@ echo "Y" | ./cachyos-repo.sh || true
 cd /tmp
 rm -rf cachyos-repo cachyos-repo.tar.xz
 
+# Enable multilib repo (needed for lib32-* gaming packages)
+if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
+    echo -e "\n[multilib]\nInclude = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf
+    info "multilib repository enabled"
+fi
+
 info "Syncing package databases with CachyOS repos..."
 # || true: post-transaction hooks (mkinitcpio) may return non-zero on first run;
 # we regenerate initramfs properly after installing the CachyOS kernel below.

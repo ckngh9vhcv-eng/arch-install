@@ -43,7 +43,7 @@ slurp
 playerctl
 brightnessctl
 wlogout
-networkmanager-applet
+network-manager-applet
 lxqt-policykit
 cliphist
 
@@ -56,7 +56,7 @@ direnv
 
 # Fonts
 noto-fonts
-noto-fonts-cjk-sc
+noto-fonts-cjk
 noto-fonts-emoji
 ttf-firacode-nerd
 ttf-cascadia-code
@@ -66,7 +66,7 @@ ttf-jetbrains-mono-nerd
 qt6ct
 breeze-icons
 breeze-gtk
-adw-gtk3
+adw-gtk-theme
 
 # CLI Tools
 fastfetch
