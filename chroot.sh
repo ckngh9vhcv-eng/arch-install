@@ -267,30 +267,44 @@ info "Zram configured (25% RAM, zstd compression)"
 # =============================================================================
 header "Configuring Snapper"
 
-# Snapper needs the subvolume mounted — create config for root
-# Unmount .snapshots first since snapper wants to create it
-umount /.snapshots 2>/dev/null || true
-rm -rf /.snapshots
+# snapper create-config uses D-Bus which isn't available in chroot.
+# Write the config file manually instead.
+mkdir -p /etc/snapper/configs
+cat > /etc/snapper/configs/root <<'EOF'
+SUBVOLUME="/"
+FSTYPE="btrfs"
+QGROUP=""
+SPACE_LIMIT="0.5"
+FREE_LIMIT="0.2"
+ALLOW_USERS="mike"
+ALLOW_GROUPS=""
+SYNC_ACL="no"
+BACKGROUND_COMPARISON="yes"
+NUMBER_CLEANUP="yes"
+NUMBER_MIN_AGE="1800"
+NUMBER_LIMIT="50"
+NUMBER_LIMIT_IMPORTANT="10"
+TIMELINE_CREATE="yes"
+TIMELINE_CLEANUP="yes"
+TIMELINE_MIN_AGE="1800"
+TIMELINE_LIMIT_HOURLY="0"
+TIMELINE_LIMIT_DAILY="7"
+TIMELINE_LIMIT_WEEKLY="2"
+TIMELINE_LIMIT_MONTHLY="1"
+TIMELINE_LIMIT_YEARLY="0"
+EMPTY_PRE_POST_CLEANUP="yes"
+EMPTY_PRE_POST_MIN_AGE="1800"
+EOF
 
-snapper -c root create-config /
+# Register root config in snapper's config list
+if ! grep -q "^SNAPPER_CONFIGS=" /etc/conf.d/snapper 2>/dev/null; then
+    mkdir -p /etc/conf.d
+    echo 'SNAPPER_CONFIGS="root"' > /etc/conf.d/snapper
+else
+    sed -i 's/^SNAPPER_CONFIGS=.*/SNAPPER_CONFIGS="root"/' /etc/conf.d/snapper
+fi
 
-# Snapper creates its own .snapshots subvolume, remove it and remount ours
-btrfs subvolume delete /.snapshots
-mkdir /.snapshots
-mount -o subvol=@snapshots "$(findmnt -n -o SOURCE /)" /.snapshots
-
-# Set snapshot limits
-snapper -c root set-config \
-    "ALLOW_USERS=mike" \
-    "TIMELINE_CREATE=yes" \
-    "TIMELINE_CLEANUP=yes" \
-    "TIMELINE_LIMIT_HOURLY=0" \
-    "TIMELINE_LIMIT_DAILY=7" \
-    "TIMELINE_LIMIT_WEEKLY=2" \
-    "TIMELINE_LIMIT_MONTHLY=1" \
-    "TIMELINE_LIMIT_YEARLY=0"
-
-info "Snapper root config created"
+info "Snapper root config created (manual — D-Bus unavailable in chroot)"
 
 # =============================================================================
 # TLP Power Management
