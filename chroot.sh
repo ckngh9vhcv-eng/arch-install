@@ -71,7 +71,8 @@ tar xvf cachyos-repo.tar.xz
 cd cachyos-repo
 
 info "Running CachyOS repo setup (auto-detects CPU arch)..."
-yes | ./cachyos-repo.sh
+# Use echo to answer prompts; avoid `yes |` which causes SIGPIPE with pipefail
+echo "Y" | ./cachyos-repo.sh || true
 
 cd /tmp
 rm -rf cachyos-repo cachyos-repo.tar.xz
