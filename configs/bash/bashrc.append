@@ -1,0 +1,24 @@
+# === Arch Install — Shell Configuration ===
+
+# Aliases
+alias ll='ls -la'
+alias gs='git status'
+alias gd='git diff'
+alias gl='git log --oneline --graph'
+
+# Starship prompt
+eval "$(starship init bash)"
+
+# fzf shell integration (Ctrl+R history, Ctrl+T files, Alt+C dirs)
+eval "$(fzf --bash)"
+
+# direnv hook
+eval "$(direnv hook bash)"
+
+# fastfetch on terminal open
+fastfetch
+
+# History settings
+HISTSIZE=50000
+HISTFILESIZE=100000
+HISTCONTROL=ignoredups:ignorespace

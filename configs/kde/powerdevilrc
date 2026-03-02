@@ -1,0 +1,6 @@
+[AC][Display]
+DimDisplay=false
+TurnOffDisplay=-1
+
+[AC][SuspendAndShutdown]
+AutoSuspend=0

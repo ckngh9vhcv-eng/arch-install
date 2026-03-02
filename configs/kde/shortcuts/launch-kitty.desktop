@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Launch Kitty
+Exec=kitty
+Icon=kitty
+X-KDE-GlobalAccel-CommandShortcut=true

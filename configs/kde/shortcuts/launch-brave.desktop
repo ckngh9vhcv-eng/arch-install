@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Launch Brave
+Exec=brave
+Icon=brave
+X-KDE-GlobalAccel-CommandShortcut=true
