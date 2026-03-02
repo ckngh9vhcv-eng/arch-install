@@ -201,9 +201,10 @@ info "User mike created with groups: wheel, docker, video, audio, libvirt, input
 header "Installing GPU Drivers"
 
 if [[ "$GPU_TYPE" == "amd" ]]; then
-    pacman -S --noconfirm --needed \
-        mesa vulkan-radeon libva-mesa-driver \
-        rocm-opencl-runtime \
+    # --ask 4: auto-resolve package conflicts (CachyOS mesa-git replaces stock mesa)
+    # libva-mesa-driver is included in CachyOS mesa-git, don't install separately
+    pacman -S --noconfirm --needed --ask 4 \
+        mesa vulkan-radeon \
         lib32-mesa lib32-vulkan-radeon \
         corectrl
     info "AMD GPU drivers installed"
