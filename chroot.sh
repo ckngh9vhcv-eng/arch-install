@@ -201,13 +201,13 @@ info "User mike created with groups: wheel, docker, video, audio, libvirt, input
 header "Installing GPU Drivers"
 
 if [[ "$GPU_TYPE" == "amd" ]]; then
-    # --ask 4: auto-resolve package conflicts (CachyOS mesa-git replaces stock mesa)
-    # libva-mesa-driver is included in CachyOS mesa-git, don't install separately
-    pacman -S --noconfirm --needed --ask 4 \
-        mesa vulkan-radeon \
+    # CachyOS mesa-git already provides mesa, vulkan-radeon, and VA-API drivers.
+    # Only install lib32 variants (for Steam/gaming) and corectrl.
+    # Skip mesa/vulkan-radeon — they conflict with CachyOS mesa-git.
+    pacman -S --noconfirm --needed \
         lib32-mesa lib32-vulkan-radeon \
         corectrl
-    info "AMD GPU drivers installed"
+    info "AMD GPU drivers installed (mesa-git from CachyOS already active)"
 elif [[ "$GPU_TYPE" == "nvidia" ]]; then
     pacman -S --noconfirm --needed \
         nvidia-dkms nvidia-utils lib32-nvidia-utils \
