@@ -207,6 +207,26 @@ if [[ -n "${GIT_NAME:-}" && -n "${GIT_EMAIL:-}" ]]; then
 fi
 
 # =============================================================================
+# SSH Key Restore (optional)
+# =============================================================================
+if [[ -n "${SSH_RESTORE_SOURCE:-}" ]]; then
+    header "Restoring SSH Keys"
+
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+
+    # scp from remote host (e.g., root@192.168.9.141:/root/mike-ssh-backup/)
+    scp -o StrictHostKeyChecking=accept-new -r "${SSH_RESTORE_SOURCE}/"* ~/.ssh/ && {
+        chmod 700 ~/.ssh
+        chmod 600 ~/.ssh/id_* 2>/dev/null || true
+        chmod 644 ~/.ssh/*.pub 2>/dev/null || true
+        chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+        chmod 644 ~/.ssh/authorized_keys 2>/dev/null || true
+        chmod 644 ~/.ssh/config 2>/dev/null || true
+        info "SSH keys restored from $SSH_RESTORE_SOURCE"
+    } || warn "Failed to restore SSH keys from $SSH_RESTORE_SOURCE — restore manually after reboot"
+fi
+
+# =============================================================================
 # Flatpak
 # =============================================================================
 header "Setting Up Flatpak"
@@ -226,6 +246,9 @@ echo "Remaining manual steps after reboot:"
 echo "  1. GitHub authentication:  gh auth login && gh auth setup-git"
 echo "  2. Tailscale:              sudo tailscale up"
 echo "  3. Libvirt default pool:   virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
+if [[ -z "${SSH_RESTORE_SOURCE:-}" ]]; then
+    echo "  4. Restore SSH keys:       scp -r user@host:/path/to/ssh-backup/ ~/.ssh/ && chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_*"
+fi
 echo ""
 echo "Login: greetd (tuigreet) → Hyprland + Quickshell (Void Command theme)"
 echo ""
