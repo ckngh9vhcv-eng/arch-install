@@ -248,6 +248,7 @@ systemctl enable tlp.service
 systemctl enable snapper-timeline.timer
 systemctl enable snapper-cleanup.timer
 systemctl enable tailscaled.service
+systemctl enable scx_loader.service
 
 info "System services enabled"
 
