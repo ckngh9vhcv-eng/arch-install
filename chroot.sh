@@ -252,13 +252,17 @@ systemctl enable tailscaled.service
 info "System services enabled"
 
 # =============================================================================
-# Plasma Login Manager
+# Login Manager (greetd)
 # =============================================================================
-header "Configuring Plasma Login Manager"
+header "Configuring greetd Login Manager"
 
-systemctl enable plasmalogin.service
+# Deploy greetd config
+mkdir -p /etc/greetd
+cp "$SCRIPT_DIR/configs/greetd/config.toml" /etc/greetd/config.toml
 
-info "Plasma Login Manager enabled"
+systemctl enable greetd.service
+
+info "greetd login manager enabled"
 
 # =============================================================================
 # Zram
@@ -330,47 +334,6 @@ CPU_BOOST_ON_AC=1
 EOF
 
 info "TLP configured for performance on AC"
-
-# =============================================================================
-# KDE Config Pre-seeding (via /etc/skel only)
-# =============================================================================
-header "Pre-seeding KDE Config to /etc/skel"
-
-SKEL_CONFIG="/etc/skel/.config"
-mkdir -p "$SKEL_CONFIG"
-
-# KDE config files (INI-style settings)
-for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerdevilrc; do
-    if [[ -f "$SCRIPT_DIR/configs/kde/$cfg" ]]; then
-        cp "$SCRIPT_DIR/configs/kde/$cfg" "$SKEL_CONFIG/$cfg"
-    fi
-done
-
-# Klassy config
-mkdir -p "$SKEL_CONFIG/klassy"
-cp "$SCRIPT_DIR/configs/kde/klassyrc" "$SKEL_CONFIG/klassy/klassyrc"
-
-# KDE custom shortcut .desktop files
-mkdir -p "$SKEL_CONFIG/autostart"
-if [[ -d "$SCRIPT_DIR/configs/kde/shortcuts" ]]; then
-    for desktop_file in "$SCRIPT_DIR"/configs/kde/shortcuts/*.desktop; do
-        [[ -f "$desktop_file" ]] || continue
-        cp "$desktop_file" "$SKEL_CONFIG/"
-    done
-fi
-
-info "KDE configs pre-seeded to /etc/skel"
-
-# =============================================================================
-# KDE Global Theme (Panel Layout)
-# =============================================================================
-header "Installing KDE Global Theme"
-
-THEME_DEST="/usr/share/plasma/look-and-feel/arch-install-theme"
-mkdir -p "$THEME_DEST"
-cp -r "$SCRIPT_DIR/configs/kde/global-theme/arch-install-theme/"* "$THEME_DEST/"
-
-info "Global theme installed to $THEME_DEST"
 
 # =============================================================================
 # User Setup (runs as $USERNAME inside chroot)

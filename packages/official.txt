@@ -21,20 +21,11 @@ wireplumber
 bluez
 bluez-utils
 
-# KDE Plasma + Login Manager
-plasma-desktop
-plasma-login-manager
-plasma-wayland-protocols
-
 # Hyprland
 hyprland
 xdg-desktop-portal-hyprland
-xdg-desktop-portal-kde
 
 # Hyprland utilities
-waybar
-wofi
-dunst
 hyprpaper
 hyprlock
 wl-clipboard
@@ -42,10 +33,16 @@ grim
 slurp
 playerctl
 brightnessctl
-wlogout
 network-manager-applet
 lxqt-policykit
 cliphist
+libnotify
+
+# Login manager
+greetd
+
+# Qt (for Quickshell)
+qt6-svg
 
 # Terminal & Shell
 kitty

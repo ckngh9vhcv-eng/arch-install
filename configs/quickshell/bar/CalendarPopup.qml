@@ -1,0 +1,259 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Wayland
+import ".."
+
+PanelWindow {
+    id: popup
+
+    property bool showing: false
+    property real targetX: 0
+
+    anchors.top: true
+    anchors.left: true
+    implicitWidth: 280
+    implicitHeight: contentCol.implicitHeight + 32
+    visible: showing || calHideAnim.running
+    color: "transparent"
+    focusable: true
+    aboveWindows: true
+
+    margins.top: 44
+    margins.left: Math.max(4, targetX - implicitWidth / 2)
+
+    property int displayMonth: new Date().getMonth()
+    property int displayYear: new Date().getFullYear()
+    property int todayDate: new Date().getDate()
+    property int todayMonth: new Date().getMonth()
+    property int todayYear: new Date().getFullYear()
+
+    function daysInMonth(month, year) {
+        return new Date(year, month + 1, 0).getDate();
+    }
+
+    function firstDayOfMonth(month, year) {
+        return new Date(year, month, 1).getDay();
+    }
+
+    function prevMonth() {
+        if (displayMonth === 0) {
+            displayMonth = 11;
+            displayYear--;
+        } else {
+            displayMonth--;
+        }
+    }
+
+    function nextMonth() {
+        if (displayMonth === 11) {
+            displayMonth = 0;
+            displayYear++;
+        } else {
+            displayMonth++;
+        }
+    }
+
+    function monthName(m) {
+        var names = ["January","February","March","April","May","June",
+                     "July","August","September","October","November","December"];
+        return names[m];
+    }
+
+    // Build 42-cell grid model (6 rows x 7 cols)
+    property var calendarCells: {
+        var cells = [];
+        var totalDays = daysInMonth(displayMonth, displayYear);
+        var startDay = firstDayOfMonth(displayMonth, displayYear);
+
+        // Previous month trailing days
+        var prevDays = displayMonth === 0 ? daysInMonth(11, displayYear - 1) : daysInMonth(displayMonth - 1, displayYear);
+        for (var i = startDay - 1; i >= 0; i--) {
+            cells.push({ day: prevDays - i, current: false, today: false });
+        }
+
+        // Current month days
+        for (var d = 1; d <= totalDays; d++) {
+            var isToday = (d === todayDate && displayMonth === todayMonth && displayYear === todayYear);
+            cells.push({ day: d, current: true, today: isToday });
+        }
+
+        // Next month leading days
+        var remaining = 42 - cells.length;
+        for (var n = 1; n <= remaining; n++) {
+            cells.push({ day: n, current: false, today: false });
+        }
+
+        return cells;
+    }
+
+    FocusScope {
+        anchors.fill: parent
+        focus: true
+
+        Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Escape) {
+                popup.showing = false;
+                event.accepted = true;
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: Theme.radiusPopup
+            color: Qt.rgba(Theme.surface0.r, Theme.surface0.g, Theme.surface0.b, 0.95)
+            border.width: 1
+            border.color: Theme.accentDim
+
+            opacity: popup.showing ? 1.0 : 0.0
+            scale: popup.showing ? 1.0 : 0.95
+            transformOrigin: Item.Top
+
+            Behavior on opacity {
+                NumberAnimation { id: calHideAnim; duration: 200; easing.type: Easing.OutCubic }
+            }
+            Behavior on scale {
+                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            }
+
+            ColumnLayout {
+                id: contentCol
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 12
+
+                // Month/year header with nav
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: "\u{f053}"
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontBody
+                        color: prevMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
+
+                        MouseArea {
+                            id: prevMonthArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: popup.prevMonth()
+                        }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Text {
+                        text: monthName(displayMonth) + " " + displayYear
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontBody
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Text {
+                        text: "\u{f054}"
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontBody
+                        color: nextMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
+
+                        MouseArea {
+                            id: nextMonthArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: popup.nextMonth()
+                        }
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+                }
+
+                // Day-of-week header
+                Grid {
+                    columns: 7
+                    Layout.fillWidth: true
+                    columnSpacing: 0
+                    rowSpacing: 0
+
+                    Repeater {
+                        model: ["S","M","T","W","T","F","S"]
+
+                        Text {
+                            width: (contentCol.width - 32) / 7
+                            text: modelData
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            color: Theme.textDim
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+                    }
+                }
+
+                // Calendar grid
+                Grid {
+                    columns: 7
+                    Layout.fillWidth: true
+                    columnSpacing: 0
+                    rowSpacing: 2
+
+                    Repeater {
+                        model: calendarCells
+
+                        Item {
+                            width: (contentCol.width - 32) / 7
+                            height: 30
+
+                            MouseArea {
+                                id: dayCellMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                            }
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 26
+                                height: 26
+                                radius: 13
+                                color: modelData.today ? Theme.accent :
+                                       (dayCellMouse.containsMouse && modelData.current
+                                        ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
+                                        : "transparent")
+
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData.day
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontLabel
+                                color: modelData.today ? Theme.void_ :
+                                       modelData.current ? Theme.textPrimary : Theme.textDim
+                                font.bold: modelData.today
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    onShowingChanged: {
+        if (showing) {
+            var now = new Date();
+            todayDate = now.getDate();
+            todayMonth = now.getMonth();
+            todayYear = now.getFullYear();
+            displayMonth = todayMonth;
+            displayYear = todayYear;
+        }
+    }
+
+    function toggle() { showing = !showing; }
+    function show() { showing = true; }
+    function hide() { showing = false; }
+}
