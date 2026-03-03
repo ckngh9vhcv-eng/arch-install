@@ -80,6 +80,10 @@ if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
     info "multilib repository enabled"
 fi
 
+# Enable parallel downloads
+sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 10/' /etc/pacman.conf
+info "Pacman parallel downloads set to 10"
+
 # =============================================================================
 # Chaotic-AUR Repository
 # =============================================================================
