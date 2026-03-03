@@ -28,9 +28,9 @@ mgba-qt
 melonds
 scummvm
 
-# KDE Theming
-klassy
-plasma6-applets-panel-colorizer
+# Desktop Shell
+quickshell-git
+greetd-tuigreet
 
 # GTK/Icon/Cursor Theming
 tela-circle-icon-theme-git

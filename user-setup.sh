@@ -45,33 +45,6 @@ paru -S --noconfirm --needed --skipreview $AUR_PKGS
 info "AUR packages installed"
 
 # =============================================================================
-# Deploy KDE Configs
-# =============================================================================
-header "Deploying KDE Configs"
-
-mkdir -p ~/.config/klassy ~/.config/autostart
-
-# KDE config files (INI-style settings)
-for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerdevilrc; do
-    if [[ -f "$SCRIPT_DIR/configs/kde/$cfg" ]]; then
-        cp "$SCRIPT_DIR/configs/kde/$cfg" ~/.config/"$cfg"
-    fi
-done
-
-# Klassy config
-cp "$SCRIPT_DIR/configs/kde/klassyrc" ~/.config/klassy/klassyrc
-
-# KDE custom shortcut .desktop files
-if [[ -d "$SCRIPT_DIR/configs/kde/shortcuts" ]]; then
-    for desktop_file in "$SCRIPT_DIR"/configs/kde/shortcuts/*.desktop; do
-        [[ -f "$desktop_file" ]] || continue
-        cp "$desktop_file" ~/.config/
-    done
-fi
-
-info "KDE configs deployed"
-
-# =============================================================================
 # Deploy Hyprland Configs
 # =============================================================================
 header "Deploying Hyprland Configs"
@@ -79,28 +52,16 @@ header "Deploying Hyprland Configs"
 mkdir -p ~/.config/hypr
 cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
 cp "$SCRIPT_DIR/configs/hyprpaper/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
+cp "$SCRIPT_DIR/configs/hyprlock/hyprlock.conf" ~/.config/hypr/hyprlock.conf
 
-info "Hyprland config deployed"
+info "Hyprland + Hyprlock config deployed"
 
-# Waybar
-mkdir -p ~/.config/waybar
-cp "$SCRIPT_DIR/configs/waybar/config.jsonc" ~/.config/waybar/config.jsonc
-cp "$SCRIPT_DIR/configs/waybar/style.css" ~/.config/waybar/style.css
+# Quickshell (desktop shell — bar, launcher, notifications, power menu, sidebar)
+mkdir -p ~/.config/quickshell
+cp -r "$SCRIPT_DIR/configs/quickshell/"* ~/.config/quickshell/
+mkdir -p ~/.local/share/quickshell
 
-info "Waybar config deployed"
-
-# Wofi
-mkdir -p ~/.config/wofi
-cp "$SCRIPT_DIR/configs/wofi/config" ~/.config/wofi/config
-cp "$SCRIPT_DIR/configs/wofi/style.css" ~/.config/wofi/style.css
-
-info "Wofi config deployed"
-
-# Dunst
-mkdir -p ~/.config/dunst
-cp "$SCRIPT_DIR/configs/dunst/dunstrc" ~/.config/dunst/dunstrc
-
-info "Dunst config deployed"
+info "Quickshell config deployed"
 
 # =============================================================================
 # Deploy Shared Configs
@@ -131,38 +92,16 @@ cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
 info "Shared configs deployed (kitty, starship, qt6ct, GTK)"
 
 # =============================================================================
-# Panel Colorizer Preset + Global Theme Autostart
+# Deploy Zoom & Screenshot Helper Scripts
 # =============================================================================
-header "Deploying Panel Colorizer Preset & Theme Autostart"
-
-PRESET_DIR="$HOME/.config/panel-colorizer/presets/transparent-blur"
-mkdir -p "$PRESET_DIR"
-cp "$SCRIPT_DIR/configs/kde/panel-colorizer/preset.json" "$PRESET_DIR/preset.json"
-
-# One-shot autostart: apply global theme layout + panel colorizer preset, then self-delete
-cat > ~/.config/autostart/arch-install-theme-setup.desktop <<'AUTOSTART'
-[Desktop Entry]
-Type=Application
-Name=Arch Install Theme Setup
-Comment=One-shot: apply panel layout and colorizer preset on first login
-Exec=bash -c 'sleep 3 && plasma-apply-lookandfeel --apply arch-install-theme --resetLayout && sleep 2 && dbus-send --session --type=signal /preset luisbocanegra.panel.colorizer.all.preset string:"$HOME/.config/panel-colorizer/presets/transparent-blur/" && rm -f "$HOME/.config/autostart/arch-install-theme-setup.desktop"'
-X-KDE-autostart-phase=2
-OnlyShowIn=KDE;
-AUTOSTART
-
-info "Global theme + Panel Colorizer one-shot autostart deployed"
-
-# =============================================================================
-# Deploy Zoom Helper Scripts
-# =============================================================================
-header "Installing Zoom Helper Scripts"
+header "Installing Zoom & Screenshot Helper Scripts"
 
 mkdir -p ~/.local/bin
 
 cat > ~/.local/bin/hypr-zoom-in <<'SCRIPT'
 #!/bin/bash
 current=$(hyprctl getoption cursor:zoom_factor -j | jq '.float')
-new=$(echo "$current + 0.5" | bc)
+new=$(echo "$current + 1.0" | bc)
 max="10.0"
 if [ "$(echo "$new > $max" | bc)" -eq 1 ]; then
     new="$max"
@@ -173,7 +112,7 @@ SCRIPT
 cat > ~/.local/bin/hypr-zoom-out <<'SCRIPT'
 #!/bin/bash
 current=$(hyprctl getoption cursor:zoom_factor -j | jq '.float')
-new=$(echo "$current - 0.5" | bc)
+new=$(echo "$current - 1.0" | bc)
 if [ "$(echo "$new < 1.0" | bc)" -eq 1 ]; then
     new="1.0"
 fi
@@ -185,9 +124,18 @@ cat > ~/.local/bin/hypr-zoom-reset <<'SCRIPT'
 hyprctl keyword cursor:zoom_factor 1
 SCRIPT
 
-chmod +x ~/.local/bin/hypr-zoom-{in,out,reset}
+cat > ~/.local/bin/screenshot-full <<'SCRIPT'
+#!/bin/bash
+FILE="/tmp/screenshot-$(date +%s).png"
+grim "$FILE"
+wl-copy < "$FILE"
+notify-send "Screenshot" "Copied to clipboard" -i "$FILE"
+SCRIPT
 
-info "Zoom helper scripts installed to ~/.local/bin/"
+chmod +x ~/.local/bin/hypr-zoom-{in,out,reset}
+chmod +x ~/.local/bin/screenshot-full
+
+info "Zoom & screenshot helper scripts installed to ~/.local/bin/"
 
 # =============================================================================
 # Copy Wallpaper
@@ -278,9 +226,6 @@ echo "Remaining manual steps after reboot:"
 echo "  1. GitHub authentication:  gh auth login && gh auth setup-git"
 echo "  2. Tailscale:              sudo tailscale up"
 echo "  3. Libvirt default pool:   virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
-echo "  4. Log out and back in for full theme application"
 echo ""
-echo "Sessions available at login:"
-echo "  - Plasma (Wayland) — KDE desktop with macOS-style panels"
-echo "  - Hyprland — tiling WM with purple theme"
+echo "Login: greetd (tuigreet) → Hyprland + Quickshell (Void Command theme)"
 echo ""

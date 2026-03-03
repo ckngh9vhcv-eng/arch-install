@@ -1,6 +1,6 @@
 # Arch Linux Install Script
 
-Automated Arch Linux installer that replicates a NixOS workstation setup with dual KDE Plasma + Hyprland desktops.
+Automated Arch Linux installer that replicates a NixOS Hyprland + Quickshell "Void Command" workstation.
 
 ## Hardware Target
 
@@ -13,12 +13,10 @@ Automated Arch Linux installer that replicates a NixOS workstation setup with du
 - **CachyOS kernel** (Zen4-optimized, Clang + ThinLTO, EEVDF scheduler)
 - **BTRFS** with subvolumes (@, @home, @pkg, @log, @snapshots) + Snapper
 - **systemd-boot** bootloader
-- **KDE Plasma 6** with macOS-style panels (top bar + bottom dock)
-- **Hyprland** tiling WM with purple theme
+- **Hyprland** tiling WM with Void Command purple theme (#8B6FC0)
+- **Quickshell** unified desktop shell (bar, launcher, notifications, power menu, sidebar, clipboard, screenshot)
+- **greetd + tuigreet** login manager
 - **Zram** swap (25% RAM, zstd)
-- Purple accent theme throughout (#7C5CBF)
-- Klassy window decoration with translucent titlebars
-- Panel Colorizer for transparent blur panels
 - Steam, Wine, emulators, and full gaming stack
 - Docker, QEMU/KVM, Tailscale
 
@@ -60,8 +58,6 @@ virsh pool-start default
 virsh pool-autostart default
 ```
 
-Log out and back in for full theme application.
-
 ## Project Structure
 
 ```
@@ -75,17 +71,16 @@ arch-install/
 │   └── aur.txt         # AUR packages (installed via paru)
 ├── configs/
 │   ├── hyprland/       # Hyprland WM config
-│   ├── waybar/         # Status bar config + theme
-│   ├── wofi/           # App launcher config + theme
-│   ├── dunst/          # Notification daemon config
+│   ├── hyprlock/       # Lock screen config (Void Command themed)
 │   ├── hyprpaper/      # Wallpaper config
-│   ├── kitty/          # Terminal config
+│   ├── quickshell/     # Quickshell QML desktop shell (bar, launcher, notifications, etc.)
+│   ├── greetd/         # Login manager config (tuigreet → Hyprland)
+│   ├── kitty/          # Terminal config (Void Command color scheme)
 │   ├── starship/       # Shell prompt config
 │   ├── qt6ct/          # Qt6 theming (Breeze Dark Purple)
 │   ├── gtk-3.0/        # GTK3 theme (Layan-Dark + custom dark overrides)
 │   ├── gtk-4.0/        # GTK4 theme settings
-│   ├── bash/           # Shell aliases and integrations
-│   └── kde/            # KDE panel layout, effects, shortcuts, theming
+│   └── bash/           # Shell aliases and integrations
 ├── wallpapers/         # Desktop wallpaper
 └── README.md
 ```
