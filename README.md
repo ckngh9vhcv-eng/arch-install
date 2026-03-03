@@ -24,44 +24,29 @@ Automated Arch Linux installer that replicates a NixOS workstation setup with du
 
 ## Usage
 
-### Phase 1: Boot Arch ISO
-
 ```bash
-# Connect to internet (ethernet auto-connects, or use iwctl for WiFi)
+# 1. Boot Arch ISO
+
+# 2. Connect to internet (ethernet auto-connects, or use iwctl for WiFi)
 iwctl station wlan0 connect "WiFi Name"
 
-# Get the installer (clone or copy via USB)
+# 3. Get the installer
 pacman -Sy git
 git clone https://github.com/YOUR_REPO/arch-install.git
 cd arch-install
 
-# Run installer
+# 4. Run installer
 ./install.sh
+
+# 5. Follow prompts: disk, username, password, hostname, timezone, git config
+
+# 6. Reboot — system is fully configured
+umount -R /mnt && reboot
 ```
 
-The installer will:
-1. Detect hardware (CPU/GPU)
-2. Prompt for target disk
-3. Partition, format, and mount with BTRFS subvolumes
-4. Install base system via pacstrap
-5. Chroot and configure everything
-
-### Phase 2: After Reboot
+### After Reboot — Manual Steps
 
 ```bash
-# Log in as mike
-cd ~/arch-install
-./post-install.sh
-```
-
-This installs AUR packages (paru), deploys all dotfiles, and sets up theming.
-
-### Phase 3: Manual Steps
-
-```bash
-# Change password
-passwd
-
 # GitHub CLI auth
 gh auth login
 gh auth setup-git
@@ -81,9 +66,9 @@ Log out and back in for full theme application.
 
 ```
 arch-install/
-├── install.sh          # Phase 1: Run from Arch ISO
-├── chroot.sh           # Phase 2: Runs inside arch-chroot (called by install.sh)
-├── post-install.sh     # Phase 3: Run as mike after reboot
+├── install.sh          # Phase 1: Run from Arch ISO — prompts, partitioning, pacstrap, chroot
+├── chroot.sh           # Phase 2: System config (runs as root in chroot)
+├── user-setup.sh       # Phase 3: User config (runs as $USER in chroot via su -l)
 ├── packages/
 │   ├── base.txt        # Pacstrap packages
 │   ├── official.txt    # Pacman packages
@@ -100,8 +85,7 @@ arch-install/
 │   ├── gtk-3.0/        # GTK3 theme (Layan-Dark + custom dark overrides)
 │   ├── gtk-4.0/        # GTK4 theme settings
 │   ├── bash/           # Shell aliases and integrations
-│   ├── kde/            # KDE panel layout, effects, shortcuts, theming
-│   └── plasmalogin/    # Plasma Login Manager autologin config
+│   └── kde/            # KDE panel layout, effects, shortcuts, theming
 ├── wallpapers/         # Desktop wallpaper
 └── README.md
 ```

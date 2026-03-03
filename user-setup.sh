@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Arch Linux Installer — Phase 3 (Run as mike after first reboot)
+# Arch Linux Installer — Phase 3 (Runs as $USER inside chroot via su -l)
 # Installs AUR packages, deploys dotfiles, configures theming
 # =============================================================================
 set -euo pipefail
@@ -18,34 +18,17 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Must not be root
-[[ $EUID -ne 0 ]] || error "Run this script as mike, not root"
+# SCRIPT_DIR and GIT_NAME/GIT_EMAIL are passed via environment from chroot.sh
+SCRIPT_DIR="${SCRIPT_DIR:-/root/arch-install}"
 
 # =============================================================================
-# Install paru (AUR Helper)
+# Install paru (AUR Helper) from Chaotic-AUR
 # =============================================================================
 header "Installing paru"
 
-if paru --version &>/dev/null; then
-    info "paru already installed"
-else
-    # Remove paru-bin if present (conflicts with source-built paru)
-    sudo pacman -R --noconfirm paru-bin 2>/dev/null || true
+sudo pacman -S --noconfirm --needed paru
 
-    # Build from source (not paru-bin) to link against the actual libalpm
-    # on the system — CachyOS ships a newer pacman/libalpm than stock Arch.
-    info "Building paru from source..."
-    cd /tmp
-    rm -rf paru
-    git clone https://aur.archlinux.org/paru.git
-    cd paru
-    makepkg -si --noconfirm
-    cd /tmp
-    rm -rf paru
-    info "paru installed"
-fi
+info "paru installed from Chaotic-AUR"
 
 # =============================================================================
 # Install AUR Packages
@@ -60,6 +43,39 @@ AUR_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/aur.txt" | grep -v '^\s*$' | tr
 paru -S --noconfirm --needed --skipreview $AUR_PKGS
 
 info "AUR packages installed"
+
+# =============================================================================
+# Deploy KDE Configs
+# =============================================================================
+header "Deploying KDE Configs"
+
+mkdir -p ~/.config/klassy ~/.config/autostart
+
+# KDE config files (INI-style settings)
+for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerdevilrc; do
+    if [[ -f "$SCRIPT_DIR/configs/kde/$cfg" ]]; then
+        cp "$SCRIPT_DIR/configs/kde/$cfg" ~/.config/"$cfg"
+    fi
+done
+
+# KDE panel layout
+cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" \
+    ~/.config/plasma-org.kde.plasma.desktop-appletsrc
+cp "$SCRIPT_DIR/configs/kde/plasmashellrc" \
+    ~/.config/plasmashellrc
+
+# Klassy config
+cp "$SCRIPT_DIR/configs/kde/klassyrc" ~/.config/klassy/klassyrc
+
+# KDE custom shortcut .desktop files
+if [[ -d "$SCRIPT_DIR/configs/kde/shortcuts" ]]; then
+    for desktop_file in "$SCRIPT_DIR"/configs/kde/shortcuts/*.desktop; do
+        [[ -f "$desktop_file" ]] || continue
+        cp "$desktop_file" ~/.config/
+    done
+fi
+
+info "KDE configs deployed"
 
 # =============================================================================
 # Deploy Hyprland Configs
@@ -121,6 +137,27 @@ cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
 info "Shared configs deployed (kitty, starship, qt6ct, GTK)"
 
 # =============================================================================
+# Panel Colorizer Preset
+# =============================================================================
+header "Deploying Panel Colorizer Preset"
+
+PRESET_DIR="$HOME/.config/panel-colorizer/presets/transparent-blur"
+mkdir -p "$PRESET_DIR"
+cp "$SCRIPT_DIR/configs/kde/panel-colorizer/preset.json" "$PRESET_DIR/preset.json"
+
+# Create autostart script to apply preset on first KDE login
+cat > ~/.config/autostart/panel-colorizer-preset.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=Apply Panel Colorizer Preset
+Exec=bash -c 'sleep 3 && dbus-send --session --type=signal /preset luisbocanegra.panel.colorizer.all.preset string:"$HOME/.config/panel-colorizer/presets/transparent-blur/" && rm -f ~/.config/autostart/panel-colorizer-preset.desktop'
+X-KDE-autostart-phase=2
+OnlyShowIn=KDE;
+EOF
+
+info "Panel Colorizer preset deployed with one-time autostart"
+
+# =============================================================================
 # Deploy Zoom Helper Scripts
 # =============================================================================
 header "Installing Zoom Helper Scripts"
@@ -155,11 +192,6 @@ SCRIPT
 
 chmod +x ~/.local/bin/hypr-zoom-{in,out,reset}
 
-# Ensure ~/.local/bin is in PATH
-if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-fi
-
 info "Zoom helper scripts installed to ~/.local/bin/"
 
 # =============================================================================
@@ -187,34 +219,16 @@ else
     info "Bash config already present"
 fi
 
-# =============================================================================
-# Panel Colorizer Preset
-# =============================================================================
-header "Deploying Panel Colorizer Preset"
-
-PRESET_DIR="$HOME/.config/panel-colorizer/presets/transparent-blur"
-mkdir -p "$PRESET_DIR"
-cp "$SCRIPT_DIR/configs/kde/panel-colorizer/preset.json" "$PRESET_DIR/preset.json"
-
-# Create autostart script to apply preset on first KDE login
-mkdir -p ~/.config/autostart
-cat > ~/.config/autostart/panel-colorizer-preset.desktop <<EOF
-[Desktop Entry]
-Type=Application
-Name=Apply Panel Colorizer Preset
-Exec=bash -c 'sleep 3 && dbus-send --session --type=signal /preset luisbocanegra.panel.colorizer.all.preset string:"$HOME/.config/panel-colorizer/presets/transparent-blur/" && rm -f ~/.config/autostart/panel-colorizer-preset.desktop'
-X-KDE-autostart-phase=2
-OnlyShowIn=KDE;
-EOF
-
-info "Panel Colorizer preset deployed with one-time autostart"
+# Ensure ~/.local/bin is in PATH
+if ! grep -q '$HOME/.local/bin' ~/.bashrc 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
 
 # =============================================================================
 # Cursor Theme
 # =============================================================================
 header "Setting Cursor Theme"
 
-# Set cursor for Hyprland (already in hyprland.conf env vars)
 # Set cursor for GTK apps
 mkdir -p ~/.icons/default
 cat > ~/.icons/default/index.theme <<EOF
@@ -235,6 +249,21 @@ fi
 info "Cursor theme set to Bibata-Modern-Classic"
 
 # =============================================================================
+# Git Configuration (optional)
+# =============================================================================
+if [[ -n "${GIT_NAME:-}" && -n "${GIT_EMAIL:-}" ]]; then
+    header "Configuring Git"
+
+    git config --global user.name "$GIT_NAME"
+    git config --global user.email "$GIT_EMAIL"
+    git config --global init.defaultBranch "main"
+    git config --global pull.rebase true
+    git config --global credential.helper "!gh auth git-credential"
+
+    info "Git configured (name: $GIT_NAME, email: $GIT_EMAIL)"
+fi
+
+# =============================================================================
 # Flatpak
 # =============================================================================
 header "Setting Up Flatpak"
@@ -244,43 +273,17 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 info "Flathub remote added"
 
 # =============================================================================
-# KDE Panel Layout (Static Config — XeroLinux-style)
-# =============================================================================
-header "Deploying KDE Panel Config"
-
-# Deploy static panel config files — overwrites any defaults Plasma may have created
-# appletsrc: panel contents (applets, system tray, wallpaper setting)
-# plasmashellrc: panel geometry (thickness, visibility, alignment, floating)
-cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" \
-    ~/.config/plasma-org.kde.plasma.desktop-appletsrc
-cp "$SCRIPT_DIR/configs/kde/plasmashellrc" \
-    ~/.config/plasmashellrc
-
-# Restart plasmashell if running (KDE session) so changes take effect
-if pgrep -x plasmashell &>/dev/null; then
-    info "Restarting plasmashell to apply panel layout..."
-    killall plasmashell 2>/dev/null
-    sleep 2
-    nohup plasmashell --replace &>/dev/null &
-    disown
-    info "Plasmashell restarted"
-else
-    info "KDE panel config deployed (will apply on next Plasma login)"
-fi
-
-# =============================================================================
 # Done
 # =============================================================================
-header "Post-Install Complete!"
+header "User Setup Complete!"
 
 echo -e "${GREEN}${BOLD}Your Arch Linux workstation is ready.${NC}"
 echo ""
-echo "Remaining manual steps:"
-echo "  1. Change password if needed:  passwd"
-echo "  2. GitHub authentication:      gh auth login && gh auth setup-git"
-echo "  3. Tailscale:                  sudo tailscale up"
-echo "  4. Libvirt default pool:       virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
-echo "  5. Log out and back in for full theme application"
+echo "Remaining manual steps after reboot:"
+echo "  1. GitHub authentication:  gh auth login && gh auth setup-git"
+echo "  2. Tailscale:              sudo tailscale up"
+echo "  3. Libvirt default pool:   virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
+echo "  4. Log out and back in for full theme application"
 echo ""
 echo "Sessions available at login:"
 echo "  - Plasma (Wayland) — KDE desktop with macOS-style panels"
