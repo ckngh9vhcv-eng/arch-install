@@ -92,6 +92,66 @@ read -rp "Type 'YES' to confirm: " CONFIRM
 [[ "$CONFIRM" == "YES" ]] || error "Aborted by user"
 
 # =============================================================================
+# User Configuration Prompts
+# =============================================================================
+header "User Configuration"
+
+# Username (required, validated)
+while true; do
+    read -rp "Enter username: " USERNAME
+    if [[ -z "$USERNAME" ]]; then
+        echo -e "${RED}Username cannot be empty${NC}"
+    elif [[ ! "$USERNAME" =~ ^[a-z][a-z0-9_-]*$ ]]; then
+        echo -e "${RED}Username must start with a lowercase letter and contain only lowercase letters, digits, hyphens, or underscores${NC}"
+    else
+        break
+    fi
+done
+
+# Password (required, with confirmation)
+while true; do
+    read -srp "Enter password for $USERNAME: " USER_PASSWORD
+    echo ""
+    read -srp "Confirm password: " USER_PASSWORD_CONFIRM
+    echo ""
+    if [[ -z "$USER_PASSWORD" ]]; then
+        echo -e "${RED}Password cannot be empty${NC}"
+    elif [[ "$USER_PASSWORD" != "$USER_PASSWORD_CONFIRM" ]]; then
+        echo -e "${RED}Passwords do not match. Try again.${NC}"
+    else
+        break
+    fi
+done
+
+# Hostname
+read -rp "Enter hostname [archbox]: " HOSTNAME
+HOSTNAME="${HOSTNAME:-archbox}"
+
+# Timezone (validated)
+read -rp "Enter timezone [America/Chicago]: " TIMEZONE
+TIMEZONE="${TIMEZONE:-America/Chicago}"
+if [[ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
+    error "Invalid timezone: $TIMEZONE (check: timedatectl list-timezones)"
+fi
+
+# Git config (optional)
+GIT_NAME=""
+GIT_EMAIL=""
+read -rp "Configure git? (y/n) [n]: " CONFIGURE_GIT
+if [[ "${CONFIGURE_GIT,,}" == "y" ]]; then
+    read -rp "Git display name: " GIT_NAME
+    read -rp "Git email: " GIT_EMAIL
+fi
+
+info "Username:  $USERNAME"
+info "Hostname:  $HOSTNAME"
+info "Timezone:  $TIMEZONE"
+if [[ -n "$GIT_NAME" ]]; then
+    info "Git name:  $GIT_NAME"
+    info "Git email: $GIT_EMAIL"
+fi
+
+# =============================================================================
 # Partitioning
 # =============================================================================
 header "Partitioning $DISK"
@@ -195,7 +255,14 @@ GPU_TYPE=$GPU_TYPE
 CPU_TYPE=$CPU_TYPE
 ROOT_PART=$ROOT_PART
 ESP=$ESP
+USERNAME=$USERNAME
+USER_PASSWORD=$USER_PASSWORD
+HOSTNAME=$HOSTNAME
+TIMEZONE=$TIMEZONE
+GIT_NAME=$GIT_NAME
+GIT_EMAIL=$GIT_EMAIL
 EOF
+chmod 600 /mnt/root/hw-detect
 
 # =============================================================================
 # Copy Project into Chroot
@@ -217,10 +284,7 @@ arch-chroot /mnt /root/arch-install/chroot.sh
 # =============================================================================
 header "Installation Complete!"
 
-echo -e "${GREEN}${BOLD}The base system is installed.${NC}"
+echo -e "${GREEN}${BOLD}Installation complete! Your system is fully configured.${NC}"
 echo ""
-echo "Next steps:"
-echo "  1. Reboot: umount -R /mnt && reboot"
-echo "  2. Log in as mike"
-echo "  3. Run: ~/arch-install/post-install.sh"
+echo "Reboot: umount -R /mnt && reboot"
 echo ""

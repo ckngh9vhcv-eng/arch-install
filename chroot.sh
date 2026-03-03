@@ -19,7 +19,7 @@ header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
 
 SCRIPT_DIR="/root/arch-install"
 
-# Load hardware detection
+# Load hardware detection + user config
 source /root/hw-detect
 
 # =============================================================================
@@ -27,7 +27,7 @@ source /root/hw-detect
 # =============================================================================
 header "Locale & Timezone"
 
-ln -sf /usr/share/zoneinfo/America/Chicago /etc/localtime
+ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 hwclock --systohc
 
 sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
@@ -38,16 +38,13 @@ echo "LANG=en_US.UTF-8" > /etc/locale.conf
 # Create vconsole.conf (needed by mkinitcpio sd-vconsole hook)
 echo "KEYMAP=us" > /etc/vconsole.conf
 
-info "Timezone: America/Chicago"
+info "Timezone: $TIMEZONE"
 info "Locale: en_US.UTF-8"
 
 # =============================================================================
 # Hostname
 # =============================================================================
 header "Hostname"
-
-read -rp "Enter hostname [archbox]: " HOSTNAME
-HOSTNAME="${HOSTNAME:-archbox}"
 
 echo "$HOSTNAME" > /etc/hostname
 
@@ -83,7 +80,26 @@ if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
     info "multilib repository enabled"
 fi
 
-info "Syncing package databases with CachyOS repos..."
+# =============================================================================
+# Chaotic-AUR Repository
+# =============================================================================
+header "Setting Up Chaotic-AUR Repository"
+
+pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+pacman-key --lsign-key 3056513887B78AEB
+pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
+echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
+
+info "Chaotic-AUR repository enabled"
+
+# =============================================================================
+# Sync Repos
+# =============================================================================
+header "Syncing Package Databases"
+
+info "Syncing package databases with CachyOS + Chaotic-AUR repos..."
 # || true: post-transaction hooks (mkinitcpio) may return non-zero on first run;
 # we regenerate initramfs properly after installing the CachyOS kernel below.
 pacman -Syu --noconfirm || true
@@ -188,12 +204,11 @@ info "Official packages installed"
 # =============================================================================
 header "Creating User"
 
-useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash mike
+useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash "$USERNAME"
 
-echo "Set password for mike:"
-passwd mike
+echo "$USERNAME:$USER_PASSWORD" | chpasswd
 
-info "User mike created with groups: wheel, docker, video, audio, libvirt, input"
+info "User $USERNAME created with groups: wheel, docker, video, audio, libvirt, input"
 
 # =============================================================================
 # GPU Drivers
@@ -239,15 +254,7 @@ header "Configuring Plasma Login Manager"
 
 systemctl enable plasmalogin.service
 
-# Autologin config
-mkdir -p /etc/plasmalogin.conf.d
-cat > /etc/plasmalogin.conf.d/autologin.conf <<EOF
-[Autologin]
-User=mike
-Session=plasma.desktop
-EOF
-
-info "Plasma Login Manager enabled with autologin for mike"
+info "Plasma Login Manager enabled"
 
 # =============================================================================
 # Zram
@@ -270,13 +277,13 @@ header "Configuring Snapper"
 # snapper create-config uses D-Bus which isn't available in chroot.
 # Write the config file manually instead.
 mkdir -p /etc/snapper/configs
-cat > /etc/snapper/configs/root <<'EOF'
+cat > /etc/snapper/configs/root <<SNAPEOF
 SUBVOLUME="/"
 FSTYPE="btrfs"
 QGROUP=""
 SPACE_LIMIT="0.5"
 FREE_LIMIT="0.2"
-ALLOW_USERS="mike"
+ALLOW_USERS="$USERNAME"
 ALLOW_GROUPS=""
 SYNC_ACL="no"
 BACKGROUND_COMPARISON="yes"
@@ -294,7 +301,7 @@ TIMELINE_LIMIT_MONTHLY="1"
 TIMELINE_LIMIT_YEARLY="0"
 EMPTY_PRE_POST_CLEANUP="yes"
 EMPTY_PRE_POST_MIN_AGE="1800"
-EOF
+SNAPEOF
 
 # Register root config in snapper's config list
 if ! grep -q "^SNAPPER_CONFIGS=" /etc/conf.d/snapper 2>/dev/null; then
@@ -321,85 +328,63 @@ EOF
 info "TLP configured for performance on AC"
 
 # =============================================================================
-# Git Configuration
+# KDE Config Pre-seeding (via /etc/skel only)
 # =============================================================================
-header "Configuring Git"
-
-# Set git config for mike (run as mike via su)
-su - mike -c 'git config --global user.name "Mike"'
-su - mike -c 'git config --global user.email "ckngh9vhcv-eng@users.noreply.github.com"'
-su - mike -c 'git config --global init.defaultBranch "main"'
-su - mike -c 'git config --global pull.rebase true'
-su - mike -c 'git config --global credential.helper "!gh auth git-credential"'
-
-info "Git configured for mike"
-
-# =============================================================================
-# KDE Panel Layout (Static Config — XeroLinux-style)
-# =============================================================================
-header "Installing KDE Panel Config"
-
-# Deploy static panel config files (appletsrc + plasmashellrc)
-# These define the macOS-style top bar + bottom dock layout
-# plasmashellrc stores panel geometry (thickness, visibility, alignment)
-# appletsrc stores panel contents (applets, system tray, wallpaper)
-
-# =============================================================================
-# KDE Config Pre-seeding (via /etc/skel)
-# =============================================================================
-header "Pre-seeding KDE Config Files"
-
-# These go to /etc/skel so new users inherit them.
-# Also copy directly to mike's home since user already exists.
+header "Pre-seeding KDE Config to /etc/skel"
 
 SKEL_CONFIG="/etc/skel/.config"
-MIKE_CONFIG="/home/mike/.config"
-
-mkdir -p "$SKEL_CONFIG" "$MIKE_CONFIG"
+mkdir -p "$SKEL_CONFIG"
 
 # KDE config files (INI-style settings)
 for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerdevilrc; do
     if [[ -f "$SCRIPT_DIR/configs/kde/$cfg" ]]; then
         cp "$SCRIPT_DIR/configs/kde/$cfg" "$SKEL_CONFIG/$cfg"
-        cp "$SCRIPT_DIR/configs/kde/$cfg" "$MIKE_CONFIG/$cfg"
     fi
 done
 
 # KDE panel layout (static config files)
 cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" "$SKEL_CONFIG/plasma-org.kde.plasma.desktop-appletsrc"
-cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" "$MIKE_CONFIG/plasma-org.kde.plasma.desktop-appletsrc"
 cp "$SCRIPT_DIR/configs/kde/plasmashellrc" "$SKEL_CONFIG/plasmashellrc"
-cp "$SCRIPT_DIR/configs/kde/plasmashellrc" "$MIKE_CONFIG/plasmashellrc"
 
 # Klassy config
-mkdir -p "$SKEL_CONFIG/klassy" "$MIKE_CONFIG/klassy"
+mkdir -p "$SKEL_CONFIG/klassy"
 cp "$SCRIPT_DIR/configs/kde/klassyrc" "$SKEL_CONFIG/klassy/klassyrc"
-cp "$SCRIPT_DIR/configs/kde/klassyrc" "$MIKE_CONFIG/klassy/klassyrc"
 
 # KDE custom shortcut .desktop files
-mkdir -p "$SKEL_CONFIG/autostart" "$MIKE_CONFIG/autostart"
+mkdir -p "$SKEL_CONFIG/autostart"
 if [[ -d "$SCRIPT_DIR/configs/kde/shortcuts" ]]; then
     for desktop_file in "$SCRIPT_DIR"/configs/kde/shortcuts/*.desktop; do
         [[ -f "$desktop_file" ]] || continue
         cp "$desktop_file" "$SKEL_CONFIG/"
-        cp "$desktop_file" "$MIKE_CONFIG/"
     done
 fi
 
-# Fix ownership
-chown -R mike:mike /home/mike
-
-info "KDE configs pre-seeded to /etc/skel and /home/mike/.config"
+info "KDE configs pre-seeded to /etc/skel"
 
 # =============================================================================
-# Copy Installer for Post-Reboot
+# User Setup (runs as $USERNAME inside chroot)
 # =============================================================================
-header "Preparing Post-Reboot Setup"
+header "Running User Setup as $USERNAME"
 
-cp -r "$SCRIPT_DIR" /home/mike/arch-install
-chown -R mike:mike /home/mike/arch-install
+# Grant temporary passwordless sudo for AUR installs
+echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-installer
+chmod 0440 /etc/sudoers.d/99-installer
 
-info "Post-install script ready at /home/mike/arch-install/post-install.sh"
+su -l "$USERNAME" -c "SCRIPT_DIR=/root/arch-install GIT_NAME='$GIT_NAME' GIT_EMAIL='$GIT_EMAIL' bash /root/arch-install/user-setup.sh"
+
+# Remove temporary passwordless sudo
+rm -f /etc/sudoers.d/99-installer
+
+info "User setup complete"
+
+# =============================================================================
+# Cleanup
+# =============================================================================
+header "Cleaning Up"
+
+rm -f /root/hw-detect
+
+info "Sensitive data cleaned up"
 
 # =============================================================================
 # Done
