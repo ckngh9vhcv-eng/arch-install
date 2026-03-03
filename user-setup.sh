@@ -243,7 +243,7 @@ header "User Setup Complete!"
 echo -e "${GREEN}${BOLD}Your Arch Linux workstation is ready.${NC}"
 echo ""
 echo "Remaining manual steps after reboot:"
-echo "  1. GitHub authentication:  gh auth login && gh auth setup-git"
+echo "  1. GitHub authentication:  gh auth login -p ssh"
 echo "  2. Tailscale:              sudo tailscale up"
 echo "  3. Libvirt default pool:   virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
 if [[ -z "${SSH_RESTORE_SOURCE:-}" ]]; then
