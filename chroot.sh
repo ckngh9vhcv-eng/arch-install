@@ -335,21 +335,14 @@ su - mike -c 'git config --global credential.helper "!gh auth git-credential"'
 info "Git configured for mike"
 
 # =============================================================================
-# KDE Panel Layout (System Default)
+# KDE Panel Layout (Static Config — XeroLinux-style)
 # =============================================================================
-header "Installing KDE Panel Layout"
+header "Installing KDE Panel Config"
 
-# Install layout.js as the system default panel layout
-# This runs when a user first logs into Plasma with no existing panel config
-LAYOUT_DIR="/usr/share/plasma/shells/org.kde.plasma.desktop/contents"
-if [[ -d "$LAYOUT_DIR" ]]; then
-    cp "$SCRIPT_DIR/configs/kde/layout.js" "$LAYOUT_DIR/layout.js"
-    info "KDE panel layout installed"
-else
-    warn "Plasma layout directory not found — layout.js will be installed post-reboot"
-    mkdir -p "$LAYOUT_DIR"
-    cp "$SCRIPT_DIR/configs/kde/layout.js" "$LAYOUT_DIR/layout.js"
-fi
+# Deploy static panel config files (appletsrc + plasmashellrc)
+# These define the macOS-style top bar + bottom dock layout
+# plasmashellrc stores panel geometry (thickness, visibility, alignment)
+# appletsrc stores panel contents (applets, system tray, wallpaper)
 
 # =============================================================================
 # KDE Config Pre-seeding (via /etc/skel)
@@ -364,13 +357,19 @@ MIKE_CONFIG="/home/mike/.config"
 
 mkdir -p "$SKEL_CONFIG" "$MIKE_CONFIG"
 
-# KDE config files
+# KDE config files (INI-style settings)
 for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerdevilrc; do
     if [[ -f "$SCRIPT_DIR/configs/kde/$cfg" ]]; then
         cp "$SCRIPT_DIR/configs/kde/$cfg" "$SKEL_CONFIG/$cfg"
         cp "$SCRIPT_DIR/configs/kde/$cfg" "$MIKE_CONFIG/$cfg"
     fi
 done
+
+# KDE panel layout (static config files)
+cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" "$SKEL_CONFIG/plasma-org.kde.plasma.desktop-appletsrc"
+cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" "$MIKE_CONFIG/plasma-org.kde.plasma.desktop-appletsrc"
+cp "$SCRIPT_DIR/configs/kde/plasmashellrc" "$SKEL_CONFIG/plasmashellrc"
+cp "$SCRIPT_DIR/configs/kde/plasmashellrc" "$MIKE_CONFIG/plasmashellrc"
 
 # Klassy config
 mkdir -p "$SKEL_CONFIG/klassy" "$MIKE_CONFIG/klassy"
