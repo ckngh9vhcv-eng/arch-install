@@ -143,6 +143,17 @@ if [[ "${CONFIGURE_GIT,,}" == "y" ]]; then
     read -rp "Git email: " GIT_EMAIL
 fi
 
+# SSH key restore (optional)
+SSH_RESTORE_SOURCE=""
+read -rp "Restore SSH keys from a remote host? (y/n) [n]: " RESTORE_SSH
+if [[ "${RESTORE_SSH,,}" == "y" ]]; then
+    echo "Example: root@192.168.9.141:/root/mike-ssh-backup"
+    read -rp "Enter source (user@host:/path/to/.ssh): " SSH_RESTORE_SOURCE
+    if [[ -n "$SSH_RESTORE_SOURCE" ]]; then
+        info "SSH keys will be restored from: $SSH_RESTORE_SOURCE"
+    fi
+fi
+
 info "Username:  $USERNAME"
 info "Hostname:  $HOSTNAME"
 info "Timezone:  $TIMEZONE"
@@ -261,6 +272,7 @@ HOSTNAME=$HOSTNAME
 TIMEZONE=$TIMEZONE
 GIT_NAME=$GIT_NAME
 GIT_EMAIL=$GIT_EMAIL
+SSH_RESTORE_SOURCE=$SSH_RESTORE_SOURCE
 EOF
 chmod 600 /mnt/root/hw-detect
 

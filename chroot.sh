@@ -348,7 +348,7 @@ chmod 0440 /etc/sudoers.d/99-installer
 chmod a+x /root
 chmod -R a+rX /root/arch-install
 
-su -l "$USERNAME" -c "SCRIPT_DIR=/root/arch-install GIT_NAME='$GIT_NAME' GIT_EMAIL='$GIT_EMAIL' bash /root/arch-install/user-setup.sh"
+su -l "$USERNAME" -c "SCRIPT_DIR=/root/arch-install GIT_NAME='$GIT_NAME' GIT_EMAIL='$GIT_EMAIL' SSH_RESTORE_SOURCE='$SSH_RESTORE_SOURCE' bash /root/arch-install/user-setup.sh"
 
 # Remove temporary passwordless sudo
 rm -f /etc/sudoers.d/99-installer
