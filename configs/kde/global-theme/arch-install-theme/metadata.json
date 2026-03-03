@@ -10,5 +10,6 @@
         ],
         "Version": "1.0"
     },
-    "KPackageStructure": "Plasma/LookAndFeel"
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "X-Plasma-APIVersion": "2"
 }

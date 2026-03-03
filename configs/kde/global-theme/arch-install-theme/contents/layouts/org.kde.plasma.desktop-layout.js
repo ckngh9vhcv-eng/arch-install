@@ -13,7 +13,7 @@ for (var i = 0; i < existingPanels.length; i++) {
 // =============================================================================
 // Top Panel — full-width bar with app menu, centered clock, system tray
 // =============================================================================
-var topPanel = new Panel("org.kde.panel");
+var topPanel = new Panel;
 topPanel.location = "top";
 topPanel.height = 28;
 topPanel.alignment = "center";
@@ -23,8 +23,9 @@ topPanel.floating = true;
 
 // Panel Colorizer (hidden widget, enables transparency preset)
 var topColorizer = topPanel.addWidget("luisbocanegra.panel.colorizer");
-topColorizer.writeConfig("isEnabled", true, "General");
-topColorizer.writeConfig("hideWidget", true, "General");
+topColorizer.currentConfigGroup = ["General"];
+topColorizer.writeConfig("isEnabled", true);
+topColorizer.writeConfig("hideWidget", true);
 
 // Global application menu
 topPanel.addWidget("org.kde.plasma.appmenu");
@@ -34,9 +35,10 @@ topPanel.addWidget("org.kde.plasma.panelspacer");
 
 // Digital clock (centered)
 var clock = topPanel.addWidget("org.kde.plasma.digitalclock");
-clock.writeConfig("showDate", true, "Appearance");
-clock.writeConfig("dateFormat", "shortDate", "Appearance");
-clock.writeConfig("use24hFormat", 0, "Appearance");
+clock.currentConfigGroup = ["Appearance"];
+clock.writeConfig("showDate", true);
+clock.writeConfig("dateFormat", "shortDate");
+clock.writeConfig("use24hFormat", 0);
 
 // Right spacer (pushes system tray to right)
 topPanel.addWidget("org.kde.plasma.panelspacer");
@@ -47,7 +49,7 @@ topPanel.addWidget("org.kde.plasma.systemtray");
 // =============================================================================
 // Bottom Dock — centered icon taskbar with app launcher
 // =============================================================================
-var bottomPanel = new Panel("org.kde.panel");
+var bottomPanel = new Panel;
 bottomPanel.location = "bottom";
 bottomPanel.height = 56;
 bottomPanel.alignment = "center";
@@ -57,14 +59,16 @@ bottomPanel.floating = true;
 
 // Panel Colorizer (hidden widget, enables transparency preset)
 var bottomColorizer = bottomPanel.addWidget("luisbocanegra.panel.colorizer");
-bottomColorizer.writeConfig("isEnabled", true, "General");
-bottomColorizer.writeConfig("hideWidget", true, "General");
+bottomColorizer.currentConfigGroup = ["General"];
+bottomColorizer.writeConfig("isEnabled", true);
+bottomColorizer.writeConfig("hideWidget", true);
 
 // Application launcher (Kickoff)
 bottomPanel.addWidget("org.kde.plasma.kickoff");
 
 // Icon-only task manager with pinned apps
 var tasks = bottomPanel.addWidget("org.kde.plasma.icontasks");
+tasks.currentConfigGroup = ["General"];
 tasks.writeConfig(
     "launchers",
     [
@@ -72,18 +76,16 @@ tasks.writeConfig(
         "preferred://browser",
         "applications:kitty.desktop",
         "applications:code.desktop"
-    ].join(","),
-    "General"
+    ].join(",")
 );
 
 // =============================================================================
 // Wallpaper — set on all desktops
 // =============================================================================
-// userDataPath("") returns ~/.local/share — derive home directory
-var homePath = userDataPath("").replace(/\/.local\/share$/, "");
+var homePath = userDataPath("data", "").replace(/\/.local\/share\/?$/, "");
 var wallpaper = "file://" + homePath + "/wallpapers/wallhaven-49z1pw_2560x1440.png";
 
-var allDesktops = desktops();
+var allDesktops = desktopsForActivity(currentActivity());
 for (var d = 0; d < allDesktops.length; d++) {
     allDesktops[d].wallpaperPlugin = "org.kde.image";
     allDesktops[d].currentConfigGroup = ["Wallpaper", "org.kde.image", "General"];
