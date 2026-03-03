@@ -109,6 +109,9 @@ obs-studio
 thunar
 flatpak
 
+# Scheduler
+scx-scheds
+
 # System
 cifs-utils
 udisks2
