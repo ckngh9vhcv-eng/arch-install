@@ -374,6 +374,9 @@ header "Running User Setup as $USERNAME"
 echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-installer
 chmod 0440 /etc/sudoers.d/99-installer
 
+# Allow user to read installer files (default /root is 700)
+chmod -R a+rX /root/arch-install
+
 su -l "$USERNAME" -c "SCRIPT_DIR=/root/arch-install GIT_NAME='$GIT_NAME' GIT_EMAIL='$GIT_EMAIL' bash /root/arch-install/user-setup.sh"
 
 # Remove temporary passwordless sudo
