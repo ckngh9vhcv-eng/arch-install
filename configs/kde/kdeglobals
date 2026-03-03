@@ -6,7 +6,7 @@ ColorScheme=BreezeDark
 fixed font=FiraCode Nerd Font,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
 [KDE]
-LookAndFeelPackage=org.kde.breezedark.desktop
+LookAndFeelPackage=arch-install-theme
 
 [Icons]
 Theme=Tela-circle-dark

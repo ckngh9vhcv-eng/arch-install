@@ -58,12 +58,6 @@ for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerd
     fi
 done
 
-# KDE panel layout
-cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" \
-    ~/.config/plasma-org.kde.plasma.desktop-appletsrc
-cp "$SCRIPT_DIR/configs/kde/plasmashellrc" \
-    ~/.config/plasmashellrc
-
 # Klassy config
 cp "$SCRIPT_DIR/configs/kde/klassyrc" ~/.config/klassy/klassyrc
 
@@ -137,25 +131,26 @@ cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
 info "Shared configs deployed (kitty, starship, qt6ct, GTK)"
 
 # =============================================================================
-# Panel Colorizer Preset
+# Panel Colorizer Preset + Global Theme Autostart
 # =============================================================================
-header "Deploying Panel Colorizer Preset"
+header "Deploying Panel Colorizer Preset & Theme Autostart"
 
 PRESET_DIR="$HOME/.config/panel-colorizer/presets/transparent-blur"
 mkdir -p "$PRESET_DIR"
 cp "$SCRIPT_DIR/configs/kde/panel-colorizer/preset.json" "$PRESET_DIR/preset.json"
 
-# Create autostart script to apply preset on first KDE login
-cat > ~/.config/autostart/panel-colorizer-preset.desktop <<EOF
+# One-shot autostart: apply global theme layout + panel colorizer preset, then self-delete
+cat > ~/.config/autostart/arch-install-theme-setup.desktop <<'AUTOSTART'
 [Desktop Entry]
 Type=Application
-Name=Apply Panel Colorizer Preset
-Exec=bash -c 'sleep 3 && dbus-send --session --type=signal /preset luisbocanegra.panel.colorizer.all.preset string:"$HOME/.config/panel-colorizer/presets/transparent-blur/" && rm -f ~/.config/autostart/panel-colorizer-preset.desktop'
+Name=Arch Install Theme Setup
+Comment=One-shot: apply panel layout and colorizer preset on first login
+Exec=bash -c 'sleep 3 && plasma-apply-lookandfeel --apply arch-install-theme --resetLayout && sleep 2 && dbus-send --session --type=signal /preset luisbocanegra.panel.colorizer.all.preset string:"$HOME/.config/panel-colorizer/presets/transparent-blur/" && rm -f "$HOME/.config/autostart/arch-install-theme-setup.desktop"'
 X-KDE-autostart-phase=2
 OnlyShowIn=KDE;
-EOF
+AUTOSTART
 
-info "Panel Colorizer preset deployed with one-time autostart"
+info "Global theme + Panel Colorizer one-shot autostart deployed"
 
 # =============================================================================
 # Deploy Zoom Helper Scripts
