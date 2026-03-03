@@ -1,0 +1,17 @@
+[kdeglobals][General]
+AccentColor=124,92,191
+ColorScheme=BreezeDark
+
+[kdeglobals][KDE]
+LookAndFeelPackage=arch-install-theme
+
+[kdeglobals][Icons]
+Theme=Tela-circle-dark
+
+[kcminputrc][Mouse]
+cursorTheme=Bibata-Modern-Classic
+cursorSize=24
+
+[kwinrc][org.kde.kdecoration2]
+library=org.kde.klassy
+theme=Klassy

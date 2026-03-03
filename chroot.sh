@@ -346,10 +346,6 @@ for cfg in kwinrc kdeglobals kglobalshortcutsrc kscreenlockerrc kwalletrc powerd
     fi
 done
 
-# KDE panel layout (static config files)
-cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" "$SKEL_CONFIG/plasma-org.kde.plasma.desktop-appletsrc"
-cp "$SCRIPT_DIR/configs/kde/plasmashellrc" "$SKEL_CONFIG/plasmashellrc"
-
 # Klassy config
 mkdir -p "$SKEL_CONFIG/klassy"
 cp "$SCRIPT_DIR/configs/kde/klassyrc" "$SKEL_CONFIG/klassy/klassyrc"
@@ -364,6 +360,17 @@ if [[ -d "$SCRIPT_DIR/configs/kde/shortcuts" ]]; then
 fi
 
 info "KDE configs pre-seeded to /etc/skel"
+
+# =============================================================================
+# KDE Global Theme (Panel Layout)
+# =============================================================================
+header "Installing KDE Global Theme"
+
+THEME_DEST="/usr/share/plasma/look-and-feel/arch-install-theme"
+mkdir -p "$THEME_DEST"
+cp -r "$SCRIPT_DIR/configs/kde/global-theme/arch-install-theme/"* "$THEME_DEST/"
+
+info "Global theme installed to $THEME_DEST"
 
 # =============================================================================
 # User Setup (runs as $USERNAME inside chroot)
