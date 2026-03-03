@@ -244,29 +244,29 @@ flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/fl
 info "Flathub remote added"
 
 # =============================================================================
-# KDE Wallpaper (Plasma Desktop)
+# KDE Panel Layout (Static Config — XeroLinux-style)
 # =============================================================================
-header "Configuring KDE Wallpaper"
+header "Deploying KDE Panel Config"
 
-# Create a plasma wallpaper script that runs on login
-cat > ~/.config/plasma-org.kde.plasma.desktop-appletsrc.wallpaper <<'EOF'
-# This is handled by the wallpaper setting below
-EOF
+# Deploy static panel config files — overwrites any defaults Plasma may have created
+# appletsrc: panel contents (applets, system tray, wallpaper setting)
+# plasmashellrc: panel geometry (thickness, visibility, alignment, floating)
+cp "$SCRIPT_DIR/configs/kde/plasma-org.kde.plasma.desktop-appletsrc" \
+    ~/.config/plasma-org.kde.plasma.desktop-appletsrc
+cp "$SCRIPT_DIR/configs/kde/plasmashellrc" \
+    ~/.config/plasmashellrc
 
-# Use kwriteconfig6 if available to set wallpaper
-if command -v kwriteconfig6 &>/dev/null; then
-    # Set wallpaper path in Plasma config
-    kwriteconfig6 --file plasma-org.kde.plasma.desktop-appletsrc \
-        --group 'Containments' --group '1' --group 'Wallpaper' \
-        --group 'org.kde.image' --group 'General' \
-        --key 'Image' "file://$HOME/wallpapers/wallhaven-49z1pw_2560x1440.png"
-    info "KDE wallpaper configured"
+# Restart plasmashell if running (KDE session) so changes take effect
+if pgrep -x plasmashell &>/dev/null; then
+    info "Restarting plasmashell to apply panel layout..."
+    killall plasmashell 2>/dev/null
+    sleep 2
+    nohup plasmashell --replace &>/dev/null &
+    disown
+    info "Plasmashell restarted"
 else
-    warn "kwriteconfig6 not available — set wallpaper manually in Plasma settings"
+    info "KDE panel config deployed (will apply on next Plasma login)"
 fi
-
-# Remove the temp file
-rm -f ~/.config/plasma-org.kde.plasma.desktop-appletsrc.wallpaper
 
 # =============================================================================
 # Done
