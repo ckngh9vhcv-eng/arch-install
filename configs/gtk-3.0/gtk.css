@@ -1,137 +1,137 @@
 /* Void Command GTK3 Theme Override */
-/* Palette: tokyo-night
- *   void: #16161e  surface0: #1a1b26  surface1: #1f2335
- *   surface2: #292e42  surface3: #3b4261
- *   accent: #bb9af7  accentDim: #9d7cd8  accentBright: #c0caf5
- *   textPrimary: #c0caf5  textSecondary: #a9b1d6  textDim: #565f89
+/* Palette: frost
+ *   void: #060C0C  surface0: #0A1414  surface1: #101E1E
+ *   surface2: #182828  surface3: #223636
+ *   accent: #6FC0C0  accentDim: #3F8F8F  accentBright: #8AE0E0
+ *   textPrimary: #D4F0F0  textSecondary: #A0D6D6  textDim: #689090
  */
 
 /* === Backgrounds === */
 .background {
-    background-color: #1a1b26;
-    color: #c0caf5;
+    background-color: #0A1414;
+    color: #D4F0F0;
 }
 
 headerbar, .titlebar {
-    background-color: #16161e;
-    border-bottom: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #060C0C;
+    border-bottom: 1px solid #3F8F8F;
+    color: #D4F0F0;
 }
 
 headerbar:backdrop, .titlebar:backdrop {
-    background-color: #16161e;
-    color: #565f89;
+    background-color: #060C0C;
+    color: #689090;
 }
 
 .view, iconview, treeview.view {
-    background-color: #1f2335;
-    color: #c0caf5;
+    background-color: #101E1E;
+    color: #D4F0F0;
 }
 
 textview text {
-    background-color: #1f2335;
-    color: #c0caf5;
+    background-color: #101E1E;
+    color: #D4F0F0;
 }
 
 textview border {
-    background-color: #292e42;
+    background-color: #182828;
 }
 
 placessidebar, .sidebar {
-    background-color: #1a1b26;
-    color: #a9b1d6;
+    background-color: #0A1414;
+    color: #A0D6D6;
 }
 
 placessidebar row:selected {
-    background-color: #9d7cd8;
-    color: #c0caf5;
+    background-color: #3F8F8F;
+    color: #D4F0F0;
 }
 
 menu, .menu, .popup {
-    background-color: #292e42;
-    color: #c0caf5;
-    border: 1px solid #9d7cd8;
+    background-color: #182828;
+    color: #D4F0F0;
+    border: 1px solid #3F8F8F;
 }
 
 menuitem:hover {
-    background-color: #9d7cd8;
-    color: #c0caf5;
+    background-color: #3F8F8F;
+    color: #D4F0F0;
 }
 
 toolbar, .toolbar, statusbar {
-    background-color: #16161e;
-    color: #a9b1d6;
+    background-color: #060C0C;
+    color: #A0D6D6;
 }
 
 popover, popover.background {
-    background-color: #292e42;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #182828;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
 }
 
 tooltip, .tooltip {
-    background-color: #292e42;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #182828;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
 }
 
 notebook > header {
-    background-color: #16161e;
-    border-color: #9d7cd8;
+    background-color: #060C0C;
+    border-color: #3F8F8F;
 }
 
 notebook > header tab:checked {
-    background-color: #292e42;
-    border-color: #bb9af7;
-    color: #c0caf5;
+    background-color: #182828;
+    border-color: #6FC0C0;
+    color: #D4F0F0;
 }
 
 notebook > header tab {
-    color: #565f89;
+    color: #689090;
 }
 
 notebook > stack {
-    background-color: #1a1b26;
+    background-color: #0A1414;
 }
 
 /* === Buttons === */
 button {
     background-image: none;
-    background-color: #3b4261;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #223636;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
     border-radius: 6px;
 }
 
 button:hover {
-    background-color: #9d7cd8;
-    color: #c0caf5;
+    background-color: #3F8F8F;
+    color: #D4F0F0;
 }
 
 button:active, button:checked {
-    background-color: #bb9af7;
-    color: #16161e;
+    background-color: #6FC0C0;
+    color: #060C0C;
 }
 
 button:disabled {
-    background-color: #1f2335;
-    color: #565f89;
-    border-color: #3b4261;
+    background-color: #101E1E;
+    color: #689090;
+    border-color: #223636;
 }
 
 button.suggested-action {
-    background-color: #bb9af7;
-    color: #16161e;
-    border-color: #c0caf5;
+    background-color: #6FC0C0;
+    color: #060C0C;
+    border-color: #8AE0E0;
 }
 
 button.suggested-action:hover {
-    background-color: #c0caf5;
+    background-color: #8AE0E0;
 }
 
 button.destructive-action {
     background-color: #F87171;
-    color: #16161e;
+    color: #060C0C;
     border-color: #F87171;
 }
 
@@ -141,135 +141,135 @@ button.destructive-action:hover {
 
 /* === Text Entries / Inputs === */
 entry {
-    background-color: #1f2335;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #101E1E;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
     border-radius: 6px;
-    caret-color: #bb9af7;
+    caret-color: #6FC0C0;
 }
 
 entry:focus {
-    border-color: #bb9af7;
-    box-shadow: 0 0 0 1px #bb9af7;
+    border-color: #6FC0C0;
+    box-shadow: 0 0 0 1px #6FC0C0;
 }
 
 entry:disabled {
-    background-color: #1a1b26;
-    color: #565f89;
+    background-color: #0A1414;
+    color: #689090;
 }
 
 /* === Selections === */
 selection, *:selected {
-    background-color: #9d7cd8;
-    color: #c0caf5;
+    background-color: #3F8F8F;
+    color: #D4F0F0;
 }
 
 row:selected, row:active {
-    background-color: #9d7cd8;
-    color: #c0caf5;
+    background-color: #3F8F8F;
+    color: #D4F0F0;
 }
 
 row:hover {
-    background-color: #3b4261;
+    background-color: #223636;
 }
 
 /* === Switches / Toggles === */
 switch {
-    background-color: #3b4261;
-    border: 1px solid #9d7cd8;
+    background-color: #223636;
+    border: 1px solid #3F8F8F;
     border-radius: 12px;
 }
 
 switch:checked {
-    background-color: #bb9af7;
+    background-color: #6FC0C0;
 }
 
 switch slider {
-    background-color: #c0caf5;
+    background-color: #D4F0F0;
     border-radius: 10px;
 }
 
 /* === Check / Radio buttons === */
 check, radio {
-    background-color: #1f2335;
-    border: 1px solid #9d7cd8;
-    color: #bb9af7;
+    background-color: #101E1E;
+    border: 1px solid #3F8F8F;
+    color: #6FC0C0;
 }
 
 check:checked, radio:checked {
-    background-color: #bb9af7;
-    color: #16161e;
-    border-color: #bb9af7;
+    background-color: #6FC0C0;
+    color: #060C0C;
+    border-color: #6FC0C0;
 }
 
 check:hover, radio:hover {
-    border-color: #c0caf5;
+    border-color: #8AE0E0;
 }
 
 /* === Scales / Sliders === */
 scale trough {
-    background-color: #3b4261;
+    background-color: #223636;
     border-radius: 4px;
 }
 
 scale highlight {
-    background-color: #bb9af7;
+    background-color: #6FC0C0;
     border-radius: 4px;
 }
 
 scale slider {
-    background-color: #c0caf5;
-    border: 1px solid #bb9af7;
+    background-color: #D4F0F0;
+    border: 1px solid #6FC0C0;
     border-radius: 50%;
 }
 
 scale slider:hover {
-    background-color: #c0caf5;
+    background-color: #8AE0E0;
 }
 
 /* === Scrollbars === */
 scrollbar slider {
-    background-color: #9d7cd8;
+    background-color: #3F8F8F;
     border-radius: 4px;
     min-width: 6px;
     min-height: 6px;
 }
 
 scrollbar slider:hover {
-    background-color: #bb9af7;
+    background-color: #6FC0C0;
 }
 
 scrollbar trough {
-    background-color: #1a1b26;
+    background-color: #0A1414;
 }
 
 /* === Progress bars === */
 progressbar trough {
-    background-color: #3b4261;
+    background-color: #223636;
     border-radius: 4px;
 }
 
 progressbar progress {
-    background-color: #bb9af7;
+    background-color: #6FC0C0;
     border-radius: 4px;
 }
 
 /* === Separators === */
 separator {
-    background-color: #9d7cd8;
+    background-color: #3F8F8F;
     opacity: 0.5;
 }
 
 /* === Frames === */
 frame > border {
-    border-color: #3b4261;
+    border-color: #223636;
 }
 
 /* === Spinbuttons === */
 spinbutton {
-    background-color: #1f2335;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #101E1E;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
 }
 
 spinbutton button {
@@ -279,22 +279,22 @@ spinbutton button {
 
 /* === Combo boxes === */
 combobox button.combo {
-    background-color: #3b4261;
-    border: 1px solid #9d7cd8;
-    color: #c0caf5;
+    background-color: #223636;
+    border: 1px solid #3F8F8F;
+    color: #D4F0F0;
 }
 
 combobox window menu {
-    background-color: #292e42;
+    background-color: #182828;
 }
 
 /* === Link color === */
 *:link, button.link {
-    color: #c0caf5;
+    color: #8AE0E0;
 }
 
 *:link:hover, button.link:hover {
-    color: #c0caf5;
+    color: #D4F0F0;
 }
 
 /* === Dialogs === */
@@ -303,11 +303,11 @@ dialog .dialog-action-area button {
 }
 
 messagedialog .titlebar {
-    background-color: #16161e;
+    background-color: #060C0C;
 }
 
 /* === Infobar === */
 infobar {
-    background-color: #292e42;
-    border: 1px solid #9d7cd8;
+    background-color: #182828;
+    border: 1px solid #3F8F8F;
 }

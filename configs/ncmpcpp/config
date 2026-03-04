@@ -1,0 +1,42 @@
+mpd_host = "127.0.0.1"
+mpd_port = 6600
+
+# Visualizer
+visualizer_data_source = "/tmp/mpd.fifo"
+visualizer_output_name = "Visualizer"
+visualizer_in_stereo = "yes"
+visualizer_type = "spectrum"
+visualizer_look = "●▮"
+
+# UI
+user_interface = "alternative"
+startup_screen = "media_library"
+media_library_primary_tag = "album_artist"
+
+# Display format
+song_list_format = " $7%a - $1%t$R$5%l "
+song_status_format = " $2%a $1- $3%t $1- $5%b "
+song_columns_list_format = "(25)[cyan]{a} (40)[white]{t|f:Title} (30)[magenta]{b} (7f)[green]{l}"
+
+# Progress bar
+progressbar_look = "━━─"
+progressbar_color = "magenta"
+progressbar_elapsed_color = "cyan"
+
+# Colors (inherits terminal palette from Kitty)
+colors_enabled = "yes"
+main_window_color = "white"
+header_window_color = "cyan"
+volume_color = "green"
+state_line_color = "magenta"
+state_flags_color = "magenta:b"
+statusbar_color = "white"
+empty_tag_color = "red"
+
+# Behavior
+ncmpcpp_directory = "~/.config/ncmpcpp"
+lyrics_directory = "~/.local/share/lyrics"
+follow_now_playing_lyrics = "yes"
+connected_message_on_startup = "no"
+cyclic_scrolling = "yes"
+mouse_support = "yes"
