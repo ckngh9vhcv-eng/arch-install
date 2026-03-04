@@ -33,6 +33,10 @@ ShellRoot {
         function toggleScreenshot(): void {
             screenshotTool.toggle();
         }
+
+        function cycleWallpaper(): void {
+            Theme.cycleWallpaper();
+        }
     }
 
     // Status bar on every screen

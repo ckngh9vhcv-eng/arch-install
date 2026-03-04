@@ -153,10 +153,10 @@ info "Zoom & screenshot helper scripts installed to ~/.local/bin/"
 header "Installing Wallpaper"
 
 mkdir -p ~/wallpapers
-cp "$SCRIPT_DIR/wallpapers/wallhaven-49z1pw_2560x1440.png" ~/wallpapers/ 2>/dev/null || \
-    warn "Wallpaper not found in installer — copy manually to ~/wallpapers/"
+cp "$SCRIPT_DIR"/wallpapers/*.png "$SCRIPT_DIR"/wallpapers/*.jpg ~/wallpapers/ 2>/dev/null || \
+    warn "Wallpapers not found in installer — copy manually to ~/wallpapers/"
 
-info "Wallpaper installed"
+info "Wallpapers installed"
 
 # =============================================================================
 # Bash Configuration
