@@ -14,6 +14,18 @@ Text {
     text: status
 
     Process {
+        id: bluemanProc
+        command: ["blueman-manager"]
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: bluemanProc.running = true
+    }
+
+    Process {
         id: btProc
         command: ["bluetoothctl", "info"]
         stdout: SplitParser {

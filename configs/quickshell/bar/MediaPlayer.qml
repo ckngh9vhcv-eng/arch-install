@@ -12,7 +12,7 @@ Item {
     signal clicked()
 
     property string tooltipText: trackInfoText.tooltipText
-    property bool tooltipHovered: trackMouse.containsMouse
+    property bool tooltipHovered: trackMouse.containsMouse || playIconMouse.containsMouse
 
     property var player: {
         var players = Mpris.players.values;
@@ -68,7 +68,53 @@ Item {
             Behavior on color { ColorAnimation { duration: 150 } }
         }
 
-        // Play/pause + track info
+        // Play/pause icon with pulse animation
+        Text {
+            id: playIcon
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontBody
+            color: player && player.playbackState === MprisPlaybackState.Playing
+                   ? Theme.textPrimary : Theme.accentGlow
+            text: {
+                if (!player) return "";
+                return player.playbackState === MprisPlaybackState.Playing ? "\u25b6" : "\u23f8";
+            }
+
+            SequentialAnimation {
+                id: pulseAnim
+                loops: Animation.Infinite
+                running: player !== null && player.playbackState === MprisPlaybackState.Playing
+
+                NumberAnimation {
+                    target: playIcon
+                    property: "opacity"
+                    from: 1.0; to: 0.5
+                    duration: 1200
+                    easing.type: Easing.InOutSine
+                }
+                NumberAnimation {
+                    target: playIcon
+                    property: "opacity"
+                    from: 0.5; to: 1.0
+                    duration: 1200
+                    easing.type: Easing.InOutSine
+                }
+
+                onRunningChanged: {
+                    if (!running) playIcon.opacity = 1.0;
+                }
+            }
+
+            MouseArea {
+                id: playIconMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: mediaRoot.clicked()
+            }
+        }
+
+        // Track info
         Text {
             id: trackInfoText
             font.family: Theme.fontFamily
@@ -78,12 +124,11 @@ Item {
                    ? Theme.textPrimary : Theme.accentGlow
             text: {
                 if (!player) return "";
-                var icon = player.playbackState === MprisPlaybackState.Playing ? "\u25b6" : "\u23f8";
                 var artist = player.trackArtist || "";
                 var title = player.trackTitle || "";
                 var label = artist ? (artist + " \u2014 " + title) : title;
                 if (label.length > 40) label = label.substring(0, 37) + "...";
-                return icon + " " + label;
+                return label;
             }
             elide: Text.ElideRight
 

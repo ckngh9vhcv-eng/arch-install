@@ -60,6 +60,7 @@ info "Hyprland + Hyprlock config deployed"
 mkdir -p ~/.config/quickshell
 cp -r "$SCRIPT_DIR/configs/quickshell/"* ~/.config/quickshell/
 mkdir -p ~/.local/share/quickshell
+mkdir -p ~/.local/share/cliphist
 
 info "Quickshell config deployed"
 

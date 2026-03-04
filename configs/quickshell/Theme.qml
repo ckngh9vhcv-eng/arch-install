@@ -32,6 +32,8 @@ QtObject {
     readonly property int radiusPopup: 16
     readonly property int radiusInner: 8
     readonly property int blurRadius: 48
+    readonly property int glowSpread: 12
+    readonly property real glowBaseOpacity: 0.08
 
     // Animation
     readonly property int animDuration: 200

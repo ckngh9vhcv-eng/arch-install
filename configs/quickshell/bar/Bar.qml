@@ -154,6 +154,10 @@ PanelWindow {
 
             BarSeparator {}
 
+            UpdateIndicator {}
+
+            BarSeparator {}
+
             SystemTray {}
 
             BarSeparator {}
