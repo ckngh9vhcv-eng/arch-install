@@ -227,6 +227,28 @@ Item {
                         opacity: 0.5
                     }
 
+                    // Color scheme section
+                    Text {
+                        text: "COLOR SCHEME"
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.fontLabel
+                        font.bold: true
+                        font.letterSpacing: 2
+                        color: Theme.textDim
+                    }
+
+                    ColorSchemeSelector {
+                        Layout.fillWidth: true
+                    }
+
+                    // Divider
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: Theme.accentDim
+                        opacity: 0.5
+                    }
+
                     // Notification history section
                     Text {
                         text: "NOTIFICATIONS"
