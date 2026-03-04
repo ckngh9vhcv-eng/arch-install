@@ -142,6 +142,10 @@ PanelWindow {
             Layout.alignment: Qt.AlignRight
             spacing: 10
 
+            RecordIndicator {}
+
+            BarSeparator { visible: ShellGlobals.recording }
+
             AudioControl {}
 
             BarSeparator {}

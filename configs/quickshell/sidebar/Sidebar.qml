@@ -55,6 +55,7 @@ Item {
         visible: sidebarRoot.showing
         focusable: true
         aboveWindows: true
+        exclusiveZone: 0
         color: "transparent"
 
         FocusScope {
@@ -197,12 +198,19 @@ Item {
                         }
                     }
 
-                    // Dashboard content
-                    ColumnLayout {
+                    // Dashboard content (scrollable)
+                    Flickable {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        contentHeight: dashboardContent.implicitHeight
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        visible: sidebarContent.activeTab === 0
+
+                    ColumnLayout {
+                        id: dashboardContent
+                        width: parent.width
                         spacing: 20
-                        visible: parent.activeTab === 0
 
                         // Uptime
                         Text {
@@ -295,6 +303,32 @@ Item {
                             opacity: 0.5
                         }
 
+                        // Wi-Fi networks section
+                        WifiPanel {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        // Bluetooth section
+                        BluetoothPanel {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
                         // Color scheme section
                         Text {
                             text: "COLOR SCHEME"
@@ -329,8 +363,8 @@ Item {
 
                         NotificationHistory {
                             Layout.fillWidth: true
-                            Layout.fillHeight: true
                         }
+                    }
                     }
 
                     // Keybinds content

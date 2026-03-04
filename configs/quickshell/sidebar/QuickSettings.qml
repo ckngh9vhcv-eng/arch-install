@@ -239,6 +239,58 @@ ColumnLayout {
                 ShellGlobals.doNotDisturb = !ShellGlobals.doNotDisturb;
             }
         }
+
+        ToggleButton {
+            Layout.fillWidth: true
+            icon: "\u{f11b}"
+            label: "Game Mode"
+            active: ShellGlobals.gameMode
+            activeColor: Theme.warning
+
+            onToggled: {
+                ShellGlobals.gameMode = !ShellGlobals.gameMode;
+                if (ShellGlobals.gameMode) {
+                    gameModeOnProc.running = true;
+                } else {
+                    gameModeOffProc.running = true;
+                }
+            }
+
+            Process {
+                id: gameModeOnProc
+                command: ["sh", "-c", "hyprctl keyword animations:enabled false && hyprctl keyword decoration:blur:enabled false && hyprctl keyword decoration:shadow:enabled false && hyprctl keyword decoration:dim_inactive false && hyprctl keyword decoration:rounding 0 && hyprctl keyword general:gaps_in 0 && hyprctl keyword general:gaps_out 0"]
+            }
+            Process {
+                id: gameModeOffProc
+                command: ["sh", "-c", "hyprctl keyword animations:enabled true && hyprctl keyword decoration:blur:enabled true && hyprctl keyword decoration:shadow:enabled true && hyprctl keyword decoration:dim_inactive true && hyprctl keyword decoration:rounding 10 && hyprctl keyword general:gaps_in 5 && hyprctl keyword general:gaps_out 10"]
+            }
+        }
+
+        ToggleButton {
+            Layout.fillWidth: true
+            icon: "\u{f111}"
+            label: "Record"
+            active: ShellGlobals.recording
+            activeColor: Theme.danger
+
+            onToggled: {
+                ShellGlobals.recording = !ShellGlobals.recording;
+                if (ShellGlobals.recording) {
+                    recordStartProc.running = true;
+                } else {
+                    recordStopProc.running = true;
+                }
+            }
+
+            Process {
+                id: recordStartProc
+                command: ["sh", "-c", "mkdir -p ~/Videos/recordings && gpu-screen-recorder -w screen -f 60 -a default_output -o ~/Videos/recordings/recording_$(date +%Y%m%d_%H%M%S).mp4"]
+            }
+            Process {
+                id: recordStopProc
+                command: ["pkill", "-SIGINT", "gpu-screen-rec"]
+            }
+        }
     }
 
     // Toggle button component
@@ -247,15 +299,16 @@ ColumnLayout {
         property string label: ""
         property bool active: false
         property bool _pulsing: false
+        property color activeColor: Theme.accent
         signal toggled()
 
         height: 56
         radius: Theme.radiusInner
         color: active
-               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+               ? Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.2)
                : Qt.rgba(Theme.surface3.r, Theme.surface3.g, Theme.surface3.b, 0.6)
         border.width: 1
-        border.color: _pulsing ? Theme.accentBright : (active ? Theme.accentGlow : Theme.accentDim)
+        border.color: _pulsing ? Theme.accentBright : (active ? Qt.lighter(activeColor, 1.2) : Theme.accentDim)
 
         scale: _pulsing ? 1.05 : 1.0
         Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
@@ -275,7 +328,7 @@ ColumnLayout {
                 text: icon
                 font.family: Theme.fontFamily
                 font.pixelSize: 16
-                color: active ? Theme.accentBright : Theme.textDim
+                color: active ? Qt.lighter(activeColor, 1.3) : Theme.textDim
             }
 
             Text {
