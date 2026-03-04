@@ -1,4 +1,4 @@
-/* Void Command GTK3 Theme Override
+/* Void Command GTK4 Theme Override
  * Palette from Quickshell Theme.qml:
  *   void: #06060C  surface0: #0A0A14  surface1: #10101E
  *   surface2: #181828  surface3: #222236
@@ -7,7 +7,7 @@
  */
 
 /* === Backgrounds === */
-.background {
+window, window.background {
     background-color: #0A0A14;
     color: #E0D4F0;
 }
@@ -23,7 +23,7 @@ headerbar:backdrop, .titlebar:backdrop {
     color: #7A6890;
 }
 
-.view, iconview, treeview.view {
+.view, columnview, listview, gridview {
     background-color: #10101E;
     color: #E0D4F0;
 }
@@ -33,62 +33,23 @@ textview text {
     color: #E0D4F0;
 }
 
-textview border {
-    background-color: #181828;
-}
-
-placessidebar, .sidebar {
+.navigation-sidebar {
     background-color: #0A0A14;
     color: #B8A0D6;
 }
 
-placessidebar row:selected {
+.navigation-sidebar row:selected {
     background-color: #5C3F8F;
     color: #E0D4F0;
 }
 
-menu, .menu, .popup {
-    background-color: #181828;
-    color: #E0D4F0;
-    border: 1px solid #5C3F8F;
-}
-
-menuitem:hover {
-    background-color: #5C3F8F;
-    color: #E0D4F0;
-}
-
-toolbar, .toolbar, statusbar {
-    background-color: #06060C;
-    color: #B8A0D6;
-}
-
-notebook > header {
-    background-color: #06060C;
-    border-color: #5C3F8F;
-}
-
-notebook > header tab:checked {
-    background-color: #181828;
-    border-color: #8B6FC0;
-    color: #E0D4F0;
-}
-
-notebook > header tab {
-    color: #7A6890;
-}
-
-notebook > stack {
-    background-color: #0A0A14;
-}
-
-popover, popover.background {
+popover, popover.background, popover contents {
     background-color: #181828;
     border: 1px solid #5C3F8F;
     color: #E0D4F0;
 }
 
-tooltip, .tooltip {
+tooltip {
     background-color: #181828;
     border: 1px solid #5C3F8F;
     color: #E0D4F0;
@@ -96,7 +57,6 @@ tooltip, .tooltip {
 
 /* === Buttons === */
 button {
-    background-image: none;
     background-color: #222236;
     border: 1px solid #5C3F8F;
     color: #E0D4F0;
@@ -132,7 +92,6 @@ button.suggested-action:hover {
 button.destructive-action {
     background-color: #F87171;
     color: #06060C;
-    border-color: #F87171;
 }
 
 button.destructive-action:hover {
@@ -148,9 +107,9 @@ entry {
     caret-color: #8B6FC0;
 }
 
-entry:focus {
+entry:focus-within {
     border-color: #8B6FC0;
-    box-shadow: 0 0 0 1px #8B6FC0;
+    outline-color: #8B6FC0;
 }
 
 entry:disabled {
@@ -159,7 +118,7 @@ entry:disabled {
 }
 
 /* === Selections === */
-selection, *:selected {
+selection {
     background-color: #5C3F8F;
     color: #E0D4F0;
 }
@@ -182,11 +141,6 @@ switch {
 
 switch:checked {
     background-color: #8B6FC0;
-}
-
-switch slider {
-    background-color: #E0D4F0;
-    border-radius: 10px;
 }
 
 /* === Check / Radio buttons === */
@@ -254,22 +208,13 @@ progressbar progress {
     border-radius: 4px;
 }
 
-/* === Separators / Dividers === */
+/* === Separators === */
 separator {
     background-color: #5C3F8F;
     opacity: 0.5;
 }
 
-/* === Dialogs === */
-dialog .dialog-action-area button {
-    min-height: 28px;
-}
-
-messagedialog .titlebar {
-    background-color: #06060C;
-}
-
-/* === Frames / Borders === */
+/* === Frames === */
 frame > border {
     border-color: #222236;
 }
@@ -281,33 +226,38 @@ spinbutton {
     color: #E0D4F0;
 }
 
-spinbutton button {
-    border: none;
-    border-radius: 0;
-}
-
 /* === Combo boxes === */
-combobox button.combo {
+dropdown button {
     background-color: #222236;
     border: 1px solid #5C3F8F;
     color: #E0D4F0;
 }
 
-combobox window menu {
-    background-color: #181828;
-}
-
-/* === Link color === */
-*:link, button.link {
+/* === Links === */
+link, button.link {
     color: #A88AE0;
 }
 
-*:link:hover, button.link:hover {
+link:hover, button.link:hover {
     color: #E0D4F0;
 }
 
-/* === Infobar === */
-infobar {
+/* === Notebooks / Tabs === */
+notebook > header {
+    background-color: #06060C;
+    border-color: #5C3F8F;
+}
+
+notebook > header tab:checked {
     background-color: #181828;
-    border: 1px solid #5C3F8F;
+    border-color: #8B6FC0;
+    color: #E0D4F0;
+}
+
+notebook > header tab {
+    color: #7A6890;
+}
+
+notebook > stack {
+    background-color: #0A0A14;
 }

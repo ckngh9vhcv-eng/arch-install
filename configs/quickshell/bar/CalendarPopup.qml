@@ -9,18 +9,19 @@ PanelWindow {
 
     property bool showing: false
     property real targetX: 0
+    property int _gp: 3 * Theme.glowSpread
 
     anchors.top: true
     anchors.left: true
-    implicitWidth: 280
-    implicitHeight: contentCol.implicitHeight + 32
+    implicitWidth: 280 + _gp * 2
+    implicitHeight: contentCol.implicitHeight + 32 + _gp * 2
     visible: showing || calHideAnim.running
     color: "transparent"
     focusable: true
     aboveWindows: true
 
-    margins.top: 44
-    margins.left: Math.max(4, targetX - implicitWidth / 2)
+    margins.top: 44 - _gp
+    margins.left: Math.max(4, targetX - 140) - _gp
 
     property int displayMonth: new Date().getMonth()
     property int displayYear: new Date().getFullYear()
@@ -98,142 +99,190 @@ PanelWindow {
             }
         }
 
+        // Glow layers
         Rectangle {
-            anchors.fill: parent
-            radius: Theme.radiusPopup
-            color: Qt.rgba(Theme.surface0.r, Theme.surface0.g, Theme.surface0.b, 0.95)
-            border.width: 1
-            border.color: Theme.accentDim
+            x: _gp - Theme.glowSpread * 3
+            y: _gp - Theme.glowSpread * 3
+            width: 280 + Theme.glowSpread * 6
+            height: parent.height - _gp * 2 + Theme.glowSpread * 6
+            radius: Theme.radiusPopup + Theme.glowSpread * 3
+            color: "transparent"
+            border.width: Theme.glowSpread * 3
+            border.color: Theme.accentGlow
+            opacity: popup.showing ? Theme.glowBaseOpacity * 0.34 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        }
 
-            opacity: popup.showing ? 1.0 : 0.0
-            scale: popup.showing ? 1.0 : 0.95
-            transformOrigin: Item.Top
+        Rectangle {
+            x: _gp - Theme.glowSpread * 2
+            y: _gp - Theme.glowSpread * 2
+            width: 280 + Theme.glowSpread * 4
+            height: parent.height - _gp * 2 + Theme.glowSpread * 4
+            radius: Theme.radiusPopup + Theme.glowSpread * 2
+            color: "transparent"
+            border.width: Theme.glowSpread * 2
+            border.color: Theme.accentGlow
+            opacity: popup.showing ? Theme.glowBaseOpacity * 0.5 : 0.0
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        }
 
-            Behavior on opacity {
-                NumberAnimation { id: calHideAnim; duration: 200; easing.type: Easing.OutCubic }
-            }
-            Behavior on scale {
-                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-            }
+        Rectangle {
+            x: _gp - Theme.glowSpread
+            y: _gp - Theme.glowSpread
+            width: 280 + Theme.glowSpread * 2
+            height: parent.height - _gp * 2 + Theme.glowSpread * 2
+            radius: Theme.radiusPopup + Theme.glowSpread
+            color: "transparent"
+            border.width: Theme.glowSpread
+            border.color: Theme.accentGlow
+            opacity: popup.showing ? Theme.glowBaseOpacity : 0.0
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+        }
 
-            ColumnLayout {
-                id: contentCol
+        // Content wrapper at original dimensions
+        Item {
+            x: _gp
+            y: _gp
+            width: 280
+            height: parent.height - _gp * 2
+
+            Rectangle {
                 anchors.fill: parent
-                anchors.margins: 16
-                spacing: 12
+                radius: Theme.radiusPopup
+                color: Qt.rgba(Theme.surface0.r, Theme.surface0.g, Theme.surface0.b, 0.95)
+                border.width: 1
+                border.color: Theme.accentDim
 
-                // Month/year header with nav
-                RowLayout {
-                    Layout.fillWidth: true
+                opacity: popup.showing ? 1.0 : 0.0
+                scale: popup.showing ? 1.0 : 0.95
+                transformOrigin: Item.Top
 
-                    Text {
-                        text: "\u{f053}"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontBody
-                        color: prevMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
-
-                        MouseArea {
-                            id: prevMonthArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: popup.prevMonth()
-                        }
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Text {
-                        text: monthName(displayMonth) + " " + displayYear
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontBody
-                        font.bold: true
-                        color: Theme.textPrimary
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Text {
-                        text: "\u{f054}"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontBody
-                        color: nextMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
-
-                        MouseArea {
-                            id: nextMonthArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: popup.nextMonth()
-                        }
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                    }
+                Behavior on opacity {
+                    NumberAnimation { id: calHideAnim; duration: 200; easing.type: Easing.OutCubic }
+                }
+                Behavior on scale {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                 }
 
-                // Day-of-week header
-                Grid {
-                    columns: 7
-                    Layout.fillWidth: true
-                    columnSpacing: 0
-                    rowSpacing: 0
+                ColumnLayout {
+                    id: contentCol
+                    anchors.fill: parent
+                    anchors.margins: 16
+                    spacing: 12
 
-                    Repeater {
-                        model: ["S","M","T","W","T","F","S"]
+                    // Month/year header with nav
+                    RowLayout {
+                        Layout.fillWidth: true
 
                         Text {
-                            width: (contentCol.width - 32) / 7
-                            text: modelData
+                            text: "\u{f053}"
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fontLabel
-                            font.bold: true
-                            color: Theme.textDim
-                            horizontalAlignment: Text.AlignHCenter
-                        }
-                    }
-                }
-
-                // Calendar grid
-                Grid {
-                    columns: 7
-                    Layout.fillWidth: true
-                    columnSpacing: 0
-                    rowSpacing: 2
-
-                    Repeater {
-                        model: calendarCells
-
-                        Item {
-                            width: (contentCol.width - 32) / 7
-                            height: 30
+                            font.pixelSize: Theme.fontBody
+                            color: prevMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
 
                             MouseArea {
-                                id: dayCellMouse
+                                id: prevMonthArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: popup.prevMonth()
                             }
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 26
-                                height: 26
-                                radius: 13
-                                color: modelData.today ? Theme.accent :
-                                       (dayCellMouse.containsMouse && modelData.current
-                                        ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
-                                        : "transparent")
+                        Item { Layout.fillWidth: true }
 
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                        Text {
+                            text: monthName(displayMonth) + " " + displayYear
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontBody
+                            font.bold: true
+                            color: Theme.textPrimary
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        Text {
+                            text: "\u{f054}"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontBody
+                            color: nextMonthArea.containsMouse ? Theme.textPrimary : Theme.textSecondary
+
+                            MouseArea {
+                                id: nextMonthArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: popup.nextMonth()
                             }
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
+                    }
+
+                    // Day-of-week header
+                    Grid {
+                        columns: 7
+                        Layout.fillWidth: true
+                        columnSpacing: 0
+                        rowSpacing: 0
+
+                        Repeater {
+                            model: ["S","M","T","W","T","F","S"]
 
                             Text {
-                                anchors.centerIn: parent
-                                text: modelData.day
+                                width: (contentCol.width - 32) / 7
+                                text: modelData
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontLabel
-                                color: modelData.today ? Theme.void_ :
-                                       modelData.current ? Theme.textPrimary : Theme.textDim
-                                font.bold: modelData.today
+                                font.bold: true
+                                color: Theme.textDim
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
+                    }
+
+                    // Calendar grid
+                    Grid {
+                        columns: 7
+                        Layout.fillWidth: true
+                        columnSpacing: 0
+                        rowSpacing: 2
+
+                        Repeater {
+                            model: calendarCells
+
+                            Item {
+                                width: (contentCol.width - 32) / 7
+                                height: 30
+
+                                MouseArea {
+                                    id: dayCellMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                }
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 26
+                                    height: 26
+                                    radius: 13
+                                    color: modelData.today ? Theme.accent :
+                                           (dayCellMouse.containsMouse && modelData.current
+                                            ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
+                                            : "transparent")
+
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData.day
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontLabel
+                                    color: modelData.today ? Theme.void_ :
+                                           modelData.current ? Theme.textPrimary : Theme.textDim
+                                    font.bold: modelData.today
+                                }
                             }
                         }
                     }

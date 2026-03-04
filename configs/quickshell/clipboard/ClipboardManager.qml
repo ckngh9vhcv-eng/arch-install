@@ -59,7 +59,7 @@ PanelWindow {
     // Load clipboard history
     Process {
         id: listProc
-        command: ["cliphist", "list"]
+        command: ["sh", "-c", "cliphist -db-path ~/.local/share/cliphist/db list"]
         stdout: SplitParser {
             onRead: function(line) {
                 if (line.trim().length === 0) return;
@@ -78,7 +78,7 @@ PanelWindow {
     Process {
         id: decodeProc
         property string clipId: ""
-        command: ["sh", "-c", "echo '" + clipId + "' | cliphist decode | wl-copy"]
+        command: ["sh", "-c", "echo '" + clipId + "' | cliphist -db-path ~/.local/share/cliphist/db decode | wl-copy"]
     }
 
     // Delete a single entry
@@ -86,7 +86,7 @@ PanelWindow {
         id: deleteProc
         property string clipId: ""
         property int deleteIndex: -1
-        command: ["sh", "-c", "echo '" + clipId + "' | cliphist delete"]
+        command: ["sh", "-c", "echo '" + clipId + "' | cliphist -db-path ~/.local/share/cliphist/db delete"]
         onExited: function(exitCode, exitStatus) {
             if (deleteIndex >= 0 && deleteIndex < clipModel.count) {
                 clipModel.remove(deleteIndex);
@@ -97,7 +97,7 @@ PanelWindow {
     // Wipe all history
     Process {
         id: wipeProc
-        command: ["cliphist", "wipe"]
+        command: ["sh", "-c", "cliphist -db-path ~/.local/share/cliphist/db wipe"]
     }
 
     // Dark overlay backdrop

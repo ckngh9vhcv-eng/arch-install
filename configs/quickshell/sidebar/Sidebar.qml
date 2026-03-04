@@ -45,10 +45,12 @@ Item {
     PanelWindow {
         id: sidebar
 
+        property int _gp: 3 * Theme.glowSpread
+
         anchors.top: true
         anchors.bottom: true
         anchors.right: true
-        implicitWidth: 340
+        implicitWidth: 340 + _gp
 
         visible: sidebarRoot.showing
         focusable: true
@@ -66,9 +68,43 @@ Item {
                 }
             }
 
+            // Left-edge glow strips
+            Rectangle {
+                x: 0
+                y: 0
+                width: sidebar._gp
+                height: parent.height
+                color: Theme.accentGlow
+                opacity: sidebarRoot.showing ? Theme.glowBaseOpacity * 0.34 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            }
+
+            Rectangle {
+                x: sidebar._gp / 3
+                y: 0
+                width: sidebar._gp * 2 / 3
+                height: parent.height
+                color: Theme.accentGlow
+                opacity: sidebarRoot.showing ? Theme.glowBaseOpacity * 0.5 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            }
+
+            Rectangle {
+                x: sidebar._gp * 2 / 3
+                y: 0
+                width: sidebar._gp / 3
+                height: parent.height
+                color: Theme.accentGlow
+                opacity: sidebarRoot.showing ? Theme.glowBaseOpacity : 0.0
+                Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            }
+
             // Background panel
             Rectangle {
-                anchors.fill: parent
+                x: sidebar._gp
+                y: 0
+                width: 340
+                height: parent.height
                 color: Qt.rgba(Theme.surface0.r, Theme.surface0.g, Theme.surface0.b, 0.92)
                 border.width: 1
                 border.color: Theme.accentDim
