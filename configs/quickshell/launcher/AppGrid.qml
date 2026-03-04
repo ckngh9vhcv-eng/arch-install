@@ -8,7 +8,73 @@ GridView {
     id: grid
 
     property string searchQuery: ""
+    property var _matchData: ({})
     signal appLaunched()
+
+    // Fuzzy match: returns { score, indices } or null
+    function fuzzyScore(query, target) {
+        if (!query || !target) return null;
+        var q = query.toLowerCase();
+        var t = target.toLowerCase();
+        var qi = 0, indices = [], lastMatch = -1, score = 0;
+        var consecutive = 0;
+
+        for (var ti = 0; ti < t.length && qi < q.length; ti++) {
+            if (t[ti] === q[qi]) {
+                indices.push(ti);
+                // Consecutive bonus
+                if (lastMatch === ti - 1) {
+                    consecutive++;
+                    score += 5 * consecutive;
+                } else {
+                    consecutive = 0;
+                    // Gap penalty
+                    if (lastMatch >= 0) score -= (ti - lastMatch - 1);
+                }
+                // Start of string bonus
+                if (ti === 0) score += 10;
+                // Word boundary bonus
+                if (ti > 0 && " -._".indexOf(t[ti - 1]) !== -1) score += 8;
+                lastMatch = ti;
+                qi++;
+            }
+        }
+        if (qi < q.length) return null; // not all query chars matched
+
+        // Exact substring bonus
+        if (t.indexOf(q) !== -1) score += 50;
+
+        return { score: score, indices: indices };
+    }
+
+    // Wrap matched characters in highlight tags
+    function highlightName(name, appId) {
+        if (!name) return "Unknown";
+        if (!searchQuery || searchQuery.length === 0) return name;
+        var data = _matchData[appId];
+        if (!data || data.length === 0) return name;
+
+        var result = "";
+        var inHighlight = false;
+        for (var i = 0; i < name.length; i++) {
+            var ch = name[i].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            if (data.indexOf(i) !== -1) {
+                if (!inHighlight) {
+                    result += "<font color='" + Theme.accentBright + "'>";
+                    inHighlight = true;
+                }
+                result += ch;
+            } else {
+                if (inHighlight) {
+                    result += "</font>";
+                    inHighlight = false;
+                }
+                result += ch;
+            }
+        }
+        if (inHighlight) result += "</font>";
+        return result;
+    }
 
     cellWidth: 140
     cellHeight: 110
@@ -20,13 +86,47 @@ GridView {
     model: {
         var apps = DesktopEntries.applications.values;
         if (searchQuery && searchQuery.length > 0) {
-            var q = searchQuery.toLowerCase();
-            return apps.filter(function(app) {
-                return (app.name && app.name.toLowerCase().indexOf(q) !== -1) ||
-                       (app.comment && app.comment.toLowerCase().indexOf(q) !== -1) ||
-                       (app.genericName && app.genericName.toLowerCase().indexOf(q) !== -1);
+            var matchData = {};
+            var scored = [];
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
+                var best = null;
+                var bestIndices = [];
+                // Check name (+10 field bonus), genericName, comment
+                var fields = [
+                    { text: app.name, bonus: 10 },
+                    { text: app.genericName, bonus: 0 },
+                    { text: app.comment, bonus: 0 }
+                ];
+                for (var f = 0; f < fields.length; f++) {
+                    var result = fuzzyScore(searchQuery, fields[f].text);
+                    if (result) {
+                        var total = result.score + fields[f].bonus;
+                        if (!best || total > best) {
+                            best = total;
+                            // Only store indices for name field matches
+                            bestIndices = (f === 0) ? result.indices : [];
+                        }
+                    }
+                }
+                if (best !== null) {
+                    scored.push({ app: app, score: best });
+                    if (bestIndices.length > 0) matchData[app.id] = bestIndices;
+                }
+            }
+            scored.sort(function(a, b) {
+                if (a.score !== b.score) return b.score - a.score;
+                var fa = AppFrequency.getScore(a.app.id);
+                var fb = AppFrequency.getScore(b.app.id);
+                if (fa !== fb) return fb - fa;
+                return (a.app.name || "").localeCompare(b.app.name || "");
             });
+            _matchData = matchData;
+            var result = [];
+            for (var j = 0; j < scored.length; j++) result.push(scored[j].app);
+            return result;
         }
+        _matchData = {};
         // Sort by frecency when no search query
         var sorted = apps.slice();
         sorted.sort(function(a, b) {
@@ -194,7 +294,8 @@ GridView {
                 // App name
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: modelData.name || "Unknown"
+                    text: grid.highlightName(modelData.name, modelData.id)
+                    textFormat: grid.searchQuery.length > 0 ? Text.StyledText : Text.PlainText
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontLabel
                     color: Theme.textPrimary
