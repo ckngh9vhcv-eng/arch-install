@@ -23,6 +23,7 @@ ColumnLayout {
     property bool mediaMounted: false
     property real gpuPercent: 0
     property real gpuTemp: 0
+    property real cpuTemp: 0
 
     Process {
         id: cpuProc
@@ -113,6 +114,17 @@ ColumnLayout {
     }
 
     Process {
+        id: cpuTempProc
+        command: ["sh", "-c", "for d in /sys/class/hwmon/hwmon*/; do [ \"$(cat \"$d/name\" 2>/dev/null)\" = \"k10temp\" ] && cat \"$d/temp1_input\" && break; done"]
+        stdout: SplitParser {
+            onRead: data => {
+                var val = parseFloat(data);
+                if (!isNaN(val)) cpuTemp = val / 1000;
+            }
+        }
+    }
+
+    Process {
         id: gpuTempProc
         command: ["sh", "-c", "cat /sys/class/drm/card*/device/hwmon/hwmon*/temp1_input 2>/dev/null | head -1"]
         stdout: SplitParser {
@@ -135,6 +147,7 @@ ColumnLayout {
             homeProc.running = true;
             mediaProc.running = true;
             gpuProc.running = true;
+            cpuTempProc.running = true;
             gpuTempProc.running = true;
         }
     }
@@ -144,7 +157,7 @@ ColumnLayout {
         label: "\u{f4bc} CPU"
         value: cpuPercent
         maxValue: 100
-        displayText: cpuPercent.toFixed(1) + "%"
+        displayText: cpuPercent.toFixed(1) + "%" + (cpuTemp > 0 ? "  " + cpuTemp.toFixed(0) + "°C" : "")
         barColor: cpuPercent > 80 ? Theme.danger : cpuPercent > 50 ? Theme.warning : Theme.accent
         Layout.fillWidth: true
     }

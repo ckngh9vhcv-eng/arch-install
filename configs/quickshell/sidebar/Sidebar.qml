@@ -120,146 +120,222 @@ Item {
                 }
 
                 ColumnLayout {
+                    id: sidebarContent
                     anchors.fill: parent
                     anchors.margins: 16
                     anchors.topMargin: 48
                     spacing: 20
 
-                    // Header
-                    Text {
-                        text: "DASHBOARD"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontClock
-                        font.bold: true
-                        font.letterSpacing: 4
-                        color: Theme.textPrimary
+                    property int activeTab: 0
+
+                    // Tab bar
+                    RowLayout {
+                        Layout.fillWidth: true
                         Layout.alignment: Qt.AlignHCenter
-                    }
+                        spacing: 24
 
-                    // Uptime
-                    Text {
-                        id: uptimeText
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        color: Theme.textDim
-                        Layout.alignment: Qt.AlignHCenter
-                        text: ""
-                        visible: text.length > 0
+                        // Dashboard tab
+                        Item {
+                            Layout.preferredWidth: dashLabel.implicitWidth
+                            Layout.preferredHeight: dashLabel.implicitHeight + 6
 
-                        property string uptimeStr: ""
+                            Text {
+                                id: dashLabel
+                                text: "DASHBOARD"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontClock
+                                font.bold: sidebarContent.activeTab === 0
+                                font.letterSpacing: 4
+                                color: sidebarContent.activeTab === 0 ? Theme.textPrimary : Theme.textDim
+                            }
 
-                        Process {
-                            id: uptimeProc
-                            command: ["cat", "/proc/uptime"]
-                            stdout: SplitParser {
-                                onRead: data => {
-                                    var secs = Math.floor(parseFloat(data.split(" ")[0]));
-                                    var days = Math.floor(secs / 86400);
-                                    var hours = Math.floor((secs % 86400) / 3600);
-                                    var mins = Math.floor((secs % 3600) / 60);
-                                    var parts = [];
-                                    if (days > 0) parts.push(days + "d");
-                                    if (hours > 0) parts.push(hours + "h");
-                                    parts.push(mins + "m");
-                                    uptimeText.text = "Up " + parts.join(" ");
-                                }
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: parent.width
+                                height: 2
+                                color: Theme.accent
+                                visible: sidebarContent.activeTab === 0
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: sidebarContent.activeTab = 0
                             }
                         }
 
-                        Timer {
-                            interval: 60000
-                            running: true
-                            repeat: true
-                            triggeredOnStart: true
-                            onTriggered: uptimeProc.running = true
+                        // Keybinds tab
+                        Item {
+                            Layout.preferredWidth: keybindsLabel.implicitWidth
+                            Layout.preferredHeight: keybindsLabel.implicitHeight + 6
+
+                            Text {
+                                id: keybindsLabel
+                                text: "KEYBINDS"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fontClock
+                                font.bold: sidebarContent.activeTab === 1
+                                font.letterSpacing: 4
+                                color: sidebarContent.activeTab === 1 ? Theme.textPrimary : Theme.textDim
+                            }
+
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: parent.width
+                                height: 2
+                                color: Theme.accent
+                                visible: sidebarContent.activeTab === 1
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: sidebarContent.activeTab = 1
+                            }
                         }
                     }
 
-                    // Divider
-                    Rectangle {
+                    // Dashboard content
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        height: 1
-                        color: Theme.accentDim
-                        opacity: 0.5
+                        Layout.fillHeight: true
+                        spacing: 20
+                        visible: parent.activeTab === 0
+
+                        // Uptime
+                        Text {
+                            id: uptimeText
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            color: Theme.textDim
+                            Layout.alignment: Qt.AlignHCenter
+                            text: ""
+                            visible: text.length > 0
+
+                            property string uptimeStr: ""
+
+                            Process {
+                                id: uptimeProc
+                                command: ["cat", "/proc/uptime"]
+                                stdout: SplitParser {
+                                    onRead: data => {
+                                        var secs = Math.floor(parseFloat(data.split(" ")[0]));
+                                        var days = Math.floor(secs / 86400);
+                                        var hours = Math.floor((secs % 86400) / 3600);
+                                        var mins = Math.floor((secs % 3600) / 60);
+                                        var parts = [];
+                                        if (days > 0) parts.push(days + "d");
+                                        if (hours > 0) parts.push(hours + "h");
+                                        parts.push(mins + "m");
+                                        uptimeText.text = "Up " + parts.join(" ");
+                                    }
+                                }
+                            }
+
+                            Timer {
+                                interval: 60000
+                                running: true
+                                repeat: true
+                                triggeredOnStart: true
+                                onTriggered: uptimeProc.running = true
+                            }
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        // System stats section
+                        Text {
+                            text: "SYSTEM"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            font.letterSpacing: 2
+                            color: Theme.textDim
+                        }
+
+                        SystemStats {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        // Quick settings section
+                        Text {
+                            text: "QUICK SETTINGS"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            font.letterSpacing: 2
+                            color: Theme.textDim
+                        }
+
+                        QuickSettings {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        // Color scheme section
+                        Text {
+                            text: "COLOR SCHEME"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            font.letterSpacing: 2
+                            color: Theme.textDim
+                        }
+
+                        ColorSchemeSelector {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        // Notification history section
+                        Text {
+                            text: "NOTIFICATIONS"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            font.letterSpacing: 2
+                            color: Theme.textDim
+                        }
+
+                        NotificationHistory {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                        }
                     }
 
-                    // System stats section
-                    Text {
-                        text: "SYSTEM"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        font.bold: true
-                        font.letterSpacing: 2
-                        color: Theme.textDim
-                    }
-
-                    SystemStats {
-                        Layout.fillWidth: true
-                    }
-
-                    // Divider
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 1
-                        color: Theme.accentDim
-                        opacity: 0.5
-                    }
-
-                    // Quick settings section
-                    Text {
-                        text: "QUICK SETTINGS"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        font.bold: true
-                        font.letterSpacing: 2
-                        color: Theme.textDim
-                    }
-
-                    QuickSettings {
-                        Layout.fillWidth: true
-                    }
-
-                    // Divider
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 1
-                        color: Theme.accentDim
-                        opacity: 0.5
-                    }
-
-                    // Color scheme section
-                    Text {
-                        text: "COLOR SCHEME"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        font.bold: true
-                        font.letterSpacing: 2
-                        color: Theme.textDim
-                    }
-
-                    ColorSchemeSelector {
-                        Layout.fillWidth: true
-                    }
-
-                    // Divider
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 1
-                        color: Theme.accentDim
-                        opacity: 0.5
-                    }
-
-                    // Notification history section
-                    Text {
-                        text: "NOTIFICATIONS"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: Theme.fontLabel
-                        font.bold: true
-                        font.letterSpacing: 2
-                        color: Theme.textDim
-                    }
-
-                    NotificationHistory {
+                    // Keybinds content
+                    KeybindReference {
+                        visible: parent.activeTab === 1
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                     }
