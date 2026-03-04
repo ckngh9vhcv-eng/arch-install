@@ -129,4 +129,16 @@ ShellRoot {
     Osd.OsdPopup {
         id: osd
     }
+
+    // Wallpaper crossfade overlay for scheme/wallpaper transitions
+    SchemeTransition {
+        id: schemeTransition
+    }
+
+    Connections {
+        target: Theme
+        function onSchemeTransitionRequested(oldWallpaper) {
+            schemeTransition.start(oldWallpaper);
+        }
+    }
 }

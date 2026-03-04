@@ -1,3 +1,4 @@
 singleton Theme 1.0 Theme.qml
 singleton ShellGlobals 1.0 ShellGlobals.qml
 singleton AppFrequency 1.0 launcher/AppFrequency.qml
+SchemeTransition 1.0 SchemeTransition.qml

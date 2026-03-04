@@ -11,17 +11,29 @@ QtObject {
 
     // --- Mutable color properties (defaults = Void Command) ---
     property color void_: "#06060C"
+    Behavior on void_ { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color surface0: "#0A0A14"
+    Behavior on surface0 { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color surface1: "#10101E"
+    Behavior on surface1 { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color surface2: "#181828"
+    Behavior on surface2 { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color surface3: "#222236"
+    Behavior on surface3 { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color accent: "#8B6FC0"
+    Behavior on accent { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color accentDim: "#5C3F8F"
+    Behavior on accentDim { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color accentBright: "#A88AE0"
+    Behavior on accentBright { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color accentGlow: "#7C5CBF"
+    Behavior on accentGlow { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color textPrimary: "#E0D4F0"
+    Behavior on textPrimary { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color textSecondary: "#B8A0D6"
+    Behavior on textSecondary { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color textDim: "#7A6890"
+    Behavior on textDim { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
     property color success: "#4ADE80"
     property color warning: "#FBBF24"
     property color danger: "#F87171"
@@ -44,6 +56,9 @@ QtObject {
 
     // Animation
     readonly property int animDuration: 200
+
+    // --- Transition signal ---
+    signal schemeTransitionRequested(string oldWallpaper)
 
     // --- Color scheme switching ---
     property string currentScheme: "void-command"
@@ -402,6 +417,9 @@ QtObject {
 
     function cycleWallpaper() {
         if (root.currentWallpapers.length <= 1) return;
+        // Emit transition signal with current wallpaper before cycling
+        var oldWp = root.homeDir + "/wallpapers/" + root.currentWallpapers[root.currentWallpaperIndex];
+        schemeTransitionRequested(oldWp);
         root.currentWallpaperIndex = (root.currentWallpaperIndex + 1) % root.currentWallpapers.length;
         var indices = root.wallpaperIndices;
         indices[root.currentScheme] = root.currentWallpaperIndex;
@@ -422,6 +440,12 @@ QtObject {
     function applyScheme(name, skipSave) {
         var s = schemes[name];
         if (!s) return;
+
+        // Emit transition signal with current wallpaper before changing anything
+        if (!skipSave && root.currentWallpapers.length > 0) {
+            var oldWp = root.homeDir + "/wallpapers/" + root.currentWallpapers[root.currentWallpaperIndex];
+            schemeTransitionRequested(oldWp);
+        }
 
         void_ = s.void_;
         surface0 = s.surface0;
