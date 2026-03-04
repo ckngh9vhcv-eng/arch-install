@@ -32,6 +32,9 @@ scummvm
 # Screen recording
 gpu-screen-recorder
 
+# Music
+mpdris2
+
 # Desktop Shell
 quickshell-git
 greetd-tuigreet

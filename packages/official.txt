@@ -111,6 +111,9 @@ swtpm
 obs-studio
 thunar
 flatpak
+amberol
+mpd
+ncmpcpp
 
 # Scheduler
 scx-scheds

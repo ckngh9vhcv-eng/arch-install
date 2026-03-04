@@ -104,7 +104,15 @@ sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
 sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprpaper.conf
 sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
 
-info "Shared configs deployed (kitty, starship, qt6ct, GTK)"
+# MPD
+mkdir -p ~/.config/mpd ~/.local/share/mpd/playlists ~/Music
+cp "$SCRIPT_DIR/configs/mpd/mpd.conf" ~/.config/mpd/mpd.conf
+
+# ncmpcpp
+mkdir -p ~/.config/ncmpcpp
+cp "$SCRIPT_DIR/configs/ncmpcpp/config" ~/.config/ncmpcpp/config
+
+info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp)"
 
 # =============================================================================
 # Deploy Zoom & Screenshot Helper Scripts
