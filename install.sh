@@ -5,20 +5,12 @@
 # =============================================================================
 set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-PURPLE='\033[0;35m'
-BOLD='\033[1m'
-NC='\033[0m'
-
-info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
-header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+
+# Log everything to a file as well as the terminal
+INSTALL_LOG="/tmp/void-command-install.log"
+exec > >(tee -a "$INSTALL_LOG") 2>&1
 
 # =============================================================================
 # Preflight Checks
@@ -46,27 +38,31 @@ header "Hardware Detection"
 
 # GPU detection
 GPU_TYPE="unknown"
-if lspci | grep -qi "AMD.*VGA\|Radeon\|AMD/ATI"; then
-    GPU_TYPE="amd"
-    info "Detected AMD GPU"
-elif lspci | grep -qi "NVIDIA"; then
+if lspci | grep -qi "NVIDIA"; then
     GPU_TYPE="nvidia"
     info "Detected NVIDIA GPU"
-else
-    warn "No AMD or NVIDIA GPU detected, defaulting to mesa"
+elif lspci | grep -qi "AMD.*VGA\|Radeon\|AMD/ATI"; then
     GPU_TYPE="amd"
+    info "Detected AMD GPU"
+elif lspci | grep -qi "Intel.*Graphics\|Intel.*Xe\|Intel.*Arc"; then
+    GPU_TYPE="intel"
+    info "Detected Intel GPU"
+else
+    warn "No dedicated GPU detected — installing basic mesa"
+    GPU_TYPE="mesa"
 fi
 
 # CPU detection
 CPU_TYPE="unknown"
-if grep -qi "AMD" /proc/cpuinfo; then
-    CPU_TYPE="amd"
-    info "Detected AMD CPU"
-elif grep -qi "Intel" /proc/cpuinfo; then
+if grep -qi "GenuineIntel" /proc/cpuinfo; then
     CPU_TYPE="intel"
     info "Detected Intel CPU"
+elif grep -qi "AuthenticAMD" /proc/cpuinfo; then
+    CPU_TYPE="amd"
+    info "Detected AMD CPU"
 else
-    warn "Could not detect CPU vendor"
+    warn "Unknown CPU vendor — skipping microcode"
+    CPU_TYPE="none"
 fi
 
 # =============================================================================
@@ -134,6 +130,10 @@ if [[ ! -f "/usr/share/zoneinfo/$TIMEZONE" ]]; then
     error "Invalid timezone: $TIMEZONE (check: timedatectl list-timezones)"
 fi
 
+# Locale & keymap (overridable via environment)
+LOCALE="${LOCALE:-en_US.UTF-8}"
+KEYMAP="${KEYMAP:-us}"
+
 # Git config (optional)
 GIT_NAME=""
 GIT_EMAIL=""
@@ -147,7 +147,6 @@ fi
 SSH_RESTORE_SOURCE=""
 read -rp "Restore SSH keys from a remote host? (y/n) [n]: " RESTORE_SSH
 if [[ "${RESTORE_SSH,,}" == "y" ]]; then
-    echo "Example: root@192.168.9.141:/root/mike-ssh-backup"
     read -rp "Enter source (user@host:/path/to/.ssh): " SSH_RESTORE_SOURCE
     if [[ -n "$SSH_RESTORE_SOURCE" ]]; then
         info "SSH keys will be restored from: $SSH_RESTORE_SOURCE"
@@ -157,6 +156,8 @@ fi
 info "Username:  $USERNAME"
 info "Hostname:  $HOSTNAME"
 info "Timezone:  $TIMEZONE"
+info "Locale:    $LOCALE"
+info "Keymap:    $KEYMAP"
 if [[ -n "$GIT_NAME" ]]; then
     info "Git name:  $GIT_NAME"
     info "Git email: $GIT_EMAIL"
@@ -165,26 +166,38 @@ fi
 # =============================================================================
 # Partitioning
 # =============================================================================
-header "Partitioning $DISK"
+if checkpoint_reached "partitioned"; then
+    info "Partitioning already done — skipping"
+else
+    header "Partitioning $DISK"
 
-# Determine partition naming (nvme uses p1, sata uses 1)
+    # Determine partition naming (nvme uses p1, sata uses 1)
+    if [[ "$DISK" == *"nvme"* ]] || [[ "$DISK" == *"mmcblk"* ]]; then
+        PART_PREFIX="${DISK}p"
+    else
+        PART_PREFIX="${DISK}"
+    fi
+
+    info "Wiping partition table..."
+    sgdisk --zap-all "$DISK"
+
+    info "Creating GPT partition table..."
+    sgdisk -n 1:0:+1G -t 1:EF00 -c 1:"EFI" "$DISK"
+    sgdisk -n 2:0:0   -t 2:8300 -c 2:"Linux" "$DISK"
+
+    # Inform kernel of partition changes
+    partprobe "$DISK"
+    sleep 2
+
+    checkpoint "partitioned"
+fi
+
+# Partition paths (needed whether we partitioned or skipped)
 if [[ "$DISK" == *"nvme"* ]] || [[ "$DISK" == *"mmcblk"* ]]; then
     PART_PREFIX="${DISK}p"
 else
     PART_PREFIX="${DISK}"
 fi
-
-info "Wiping partition table..."
-sgdisk --zap-all "$DISK"
-
-info "Creating GPT partition table..."
-sgdisk -n 1:0:+1G -t 1:EF00 -c 1:"EFI" "$DISK"
-sgdisk -n 2:0:0   -t 2:8300 -c 2:"Linux" "$DISK"
-
-# Inform kernel of partition changes
-partprobe "$DISK"
-sleep 2
-
 ESP="${PART_PREFIX}1"
 ROOT_PART="${PART_PREFIX}2"
 
@@ -194,28 +207,34 @@ info "Root: $ROOT_PART"
 # =============================================================================
 # Formatting
 # =============================================================================
-header "Formatting"
+if checkpoint_reached "formatted"; then
+    info "Formatting already done — skipping"
+else
+    header "Formatting"
 
-info "Formatting ESP as FAT32..."
-mkfs.vfat -F 32 -n EFI "$ESP"
+    info "Formatting ESP as FAT32..."
+    mkfs.vfat -F 32 -n EFI "$ESP"
 
-info "Formatting root as BTRFS..."
-mkfs.btrfs -f -L archroot "$ROOT_PART"
+    info "Formatting root as BTRFS..."
+    mkfs.btrfs -f -L archroot "$ROOT_PART"
 
-# =============================================================================
-# BTRFS Subvolumes
-# =============================================================================
-header "Creating BTRFS Subvolumes"
+    # =========================================================================
+    # BTRFS Subvolumes
+    # =========================================================================
+    header "Creating BTRFS Subvolumes"
 
-mount "$ROOT_PART" /mnt
+    mount "$ROOT_PART" /mnt
 
-btrfs subvolume create /mnt/@
-btrfs subvolume create /mnt/@home
-btrfs subvolume create /mnt/@pkg
-btrfs subvolume create /mnt/@log
-btrfs subvolume create /mnt/@snapshots
+    btrfs subvolume create /mnt/@
+    btrfs subvolume create /mnt/@home
+    btrfs subvolume create /mnt/@pkg
+    btrfs subvolume create /mnt/@log
+    btrfs subvolume create /mnt/@snapshots
 
-umount /mnt
+    umount /mnt
+
+    checkpoint "formatted"
+fi
 
 # =============================================================================
 # Mount Subvolumes
@@ -238,16 +257,30 @@ mount "$ESP" /mnt/boot
 info "All subvolumes mounted"
 
 # =============================================================================
+# Disk Space Check
+# =============================================================================
+avail=$(df --output=avail /mnt | tail -1)
+if [[ "$avail" -lt 20971520 ]]; then
+    error "Less than 20GB available on /mnt ($((avail / 1048576))GB). Need at least 20GB."
+fi
+info "Disk space OK: $((avail / 1048576))GB available"
+
+# =============================================================================
 # Pacstrap
 # =============================================================================
-header "Installing Base System"
+if checkpoint_reached "pacstrapped"; then
+    info "Base system already installed — skipping pacstrap"
+else
+    header "Installing Base System"
 
-# Read base packages (strip comments and blank lines)
-BASE_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/base.txt" | grep -v '^\s*$' | tr '\n' ' ')
+    # Read base packages (strip comments and blank lines)
+    BASE_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/base.txt" | grep -v '^\s*$' | tr '\n' ' ')
 
-pacstrap -K /mnt $BASE_PKGS
+    spinner "Installing base system (pacstrap)" pacstrap -K /mnt $BASE_PKGS
 
-info "Base system installed"
+    info "Base system installed"
+    checkpoint "pacstrapped"
+fi
 
 # =============================================================================
 # Generate fstab
@@ -270,6 +303,8 @@ USERNAME=$USERNAME
 USER_PASSWORD=$USER_PASSWORD
 HOSTNAME=$HOSTNAME
 TIMEZONE=$TIMEZONE
+LOCALE=$LOCALE
+KEYMAP=$KEYMAP
 GIT_NAME=$GIT_NAME
 GIT_EMAIL=$GIT_EMAIL
 SSH_RESTORE_SOURCE=$SSH_RESTORE_SOURCE
@@ -290,6 +325,15 @@ info "Project copied to /mnt/root/arch-install"
 header "Entering Chroot"
 
 arch-chroot /mnt /root/arch-install/chroot.sh
+
+# =============================================================================
+# Copy Install Log to Target System
+# =============================================================================
+if [[ -f "$INSTALL_LOG" ]]; then
+    mkdir -p /mnt/var/log
+    cp "$INSTALL_LOG" /mnt/var/log/void-command-install.log
+    info "Install log saved to /var/log/void-command-install.log"
+fi
 
 # =============================================================================
 # Done

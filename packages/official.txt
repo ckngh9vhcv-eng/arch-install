@@ -96,10 +96,7 @@ lutris
 scummvm
 linux-headers
 dkms
-lib32-mesa
-lib32-vulkan-radeon
 mangohud
-lib32-mangohud
 wine-staging
 winetricks
 

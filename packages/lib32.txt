@@ -1,0 +1,5 @@
+# lib32 packages for 32-bit compatibility (Steam, Wine, gaming)
+# These are installed by default. To skip, set SKIP_LIB32=1.
+lib32-mesa
+lib32-vulkan-radeon
+lib32-mangohud

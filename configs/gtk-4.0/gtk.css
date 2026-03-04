@@ -1,116 +1,116 @@
 /* Void Command GTK4 Theme Override */
-/* Palette: frost
- *   void: #060C0C  surface0: #0A1414  surface1: #101E1E
- *   surface2: #182828  surface3: #223636
- *   accent: #6FC0C0  accentDim: #3F8F8F  accentBright: #8AE0E0
- *   textPrimary: #D4F0F0  textSecondary: #A0D6D6  textDim: #689090
+/* Palette: void-command
+ *   void: #06060C  surface0: #0A0A14  surface1: #10101E
+ *   surface2: #181828  surface3: #222236
+ *   accent: #8B6FC0  accentDim: #5C3F8F  accentBright: #A88AE0
+ *   textPrimary: #E0D4F0  textSecondary: #B8A0D6  textDim: #7A6890
  */
 
 /* === Backgrounds === */
 window, window.background {
-    background-color: #0A1414;
-    color: #D4F0F0;
+    background-color: #0A0A14;
+    color: #E0D4F0;
 }
 
 headerbar, .titlebar {
-    background-color: #060C0C;
-    border-bottom: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #06060C;
+    border-bottom: 1px solid #5C3F8F;
+    color: #E0D4F0;
 }
 
 headerbar:backdrop, .titlebar:backdrop {
-    background-color: #060C0C;
-    color: #689090;
+    background-color: #06060C;
+    color: #7A6890;
 }
 
 .view, columnview, listview, gridview {
-    background-color: #101E1E;
-    color: #D4F0F0;
+    background-color: #10101E;
+    color: #E0D4F0;
 }
 
 textview text {
-    background-color: #101E1E;
-    color: #D4F0F0;
+    background-color: #10101E;
+    color: #E0D4F0;
 }
 
 .navigation-sidebar {
-    background-color: #0A1414;
-    color: #A0D6D6;
+    background-color: #0A0A14;
+    color: #B8A0D6;
 }
 
 .navigation-sidebar row:selected {
-    background-color: #3F8F8F;
-    color: #D4F0F0;
+    background-color: #5C3F8F;
+    color: #E0D4F0;
 }
 
 popover, popover.background, popover contents {
-    background-color: #182828;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #181828;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
 }
 
 tooltip {
-    background-color: #182828;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #181828;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
 }
 
 notebook > header {
-    background-color: #060C0C;
-    border-color: #3F8F8F;
+    background-color: #06060C;
+    border-color: #5C3F8F;
 }
 
 notebook > header tab:checked {
-    background-color: #182828;
-    border-color: #6FC0C0;
-    color: #D4F0F0;
+    background-color: #181828;
+    border-color: #8B6FC0;
+    color: #E0D4F0;
 }
 
 notebook > header tab {
-    color: #689090;
+    color: #7A6890;
 }
 
 notebook > stack {
-    background-color: #0A1414;
+    background-color: #0A0A14;
 }
 
 /* === Buttons === */
 button {
-    background-color: #223636;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #222236;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
     border-radius: 6px;
 }
 
 button:hover {
-    background-color: #3F8F8F;
-    color: #D4F0F0;
+    background-color: #5C3F8F;
+    color: #E0D4F0;
 }
 
 button:active, button:checked {
-    background-color: #6FC0C0;
-    color: #060C0C;
+    background-color: #8B6FC0;
+    color: #06060C;
 }
 
 button:disabled {
-    background-color: #101E1E;
-    color: #689090;
-    border-color: #223636;
+    background-color: #10101E;
+    color: #7A6890;
+    border-color: #222236;
 }
 
 button.suggested-action {
-    background-color: #6FC0C0;
-    color: #060C0C;
-    border-color: #8AE0E0;
+    background-color: #8B6FC0;
+    color: #06060C;
+    border-color: #A88AE0;
 }
 
 button.suggested-action:hover {
-    background-color: #8AE0E0;
+    background-color: #A88AE0;
 }
 
 button.destructive-action {
     background-color: #F87171;
-    color: #060C0C;
+    color: #06060C;
 }
 
 button.destructive-action:hover {
@@ -119,145 +119,145 @@ button.destructive-action:hover {
 
 /* === Text Entries / Inputs === */
 entry {
-    background-color: #101E1E;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #10101E;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
     border-radius: 6px;
-    caret-color: #6FC0C0;
+    caret-color: #8B6FC0;
 }
 
 entry:focus-within {
-    border-color: #6FC0C0;
-    outline-color: #6FC0C0;
+    border-color: #8B6FC0;
+    outline-color: #8B6FC0;
 }
 
 entry:disabled {
-    background-color: #0A1414;
-    color: #689090;
+    background-color: #0A0A14;
+    color: #7A6890;
 }
 
 /* === Selections === */
 selection {
-    background-color: #3F8F8F;
-    color: #D4F0F0;
+    background-color: #5C3F8F;
+    color: #E0D4F0;
 }
 
 row:selected, row:active {
-    background-color: #3F8F8F;
-    color: #D4F0F0;
+    background-color: #5C3F8F;
+    color: #E0D4F0;
 }
 
 row:hover {
-    background-color: #223636;
+    background-color: #222236;
 }
 
 /* === Switches / Toggles === */
 switch {
-    background-color: #223636;
-    border: 1px solid #3F8F8F;
+    background-color: #222236;
+    border: 1px solid #5C3F8F;
     border-radius: 12px;
 }
 
 switch:checked {
-    background-color: #6FC0C0;
+    background-color: #8B6FC0;
 }
 
 /* === Check / Radio buttons === */
 check, radio {
-    background-color: #101E1E;
-    border: 1px solid #3F8F8F;
-    color: #6FC0C0;
+    background-color: #10101E;
+    border: 1px solid #5C3F8F;
+    color: #8B6FC0;
 }
 
 check:checked, radio:checked {
-    background-color: #6FC0C0;
-    color: #060C0C;
-    border-color: #6FC0C0;
+    background-color: #8B6FC0;
+    color: #06060C;
+    border-color: #8B6FC0;
 }
 
 check:hover, radio:hover {
-    border-color: #8AE0E0;
+    border-color: #A88AE0;
 }
 
 /* === Scales / Sliders === */
 scale trough {
-    background-color: #223636;
+    background-color: #222236;
     border-radius: 4px;
 }
 
 scale highlight {
-    background-color: #6FC0C0;
+    background-color: #8B6FC0;
     border-radius: 4px;
 }
 
 scale slider {
-    background-color: #D4F0F0;
-    border: 1px solid #6FC0C0;
+    background-color: #E0D4F0;
+    border: 1px solid #8B6FC0;
     border-radius: 50%;
 }
 
 scale slider:hover {
-    background-color: #8AE0E0;
+    background-color: #A88AE0;
 }
 
 /* === Scrollbars === */
 scrollbar slider {
-    background-color: #3F8F8F;
+    background-color: #5C3F8F;
     border-radius: 4px;
     min-width: 6px;
     min-height: 6px;
 }
 
 scrollbar slider:hover {
-    background-color: #6FC0C0;
+    background-color: #8B6FC0;
 }
 
 scrollbar trough {
-    background-color: #0A1414;
+    background-color: #0A0A14;
 }
 
 /* === Progress bars === */
 progressbar trough {
-    background-color: #223636;
+    background-color: #222236;
     border-radius: 4px;
 }
 
 progressbar progress {
-    background-color: #6FC0C0;
+    background-color: #8B6FC0;
     border-radius: 4px;
 }
 
 /* === Separators === */
 separator {
-    background-color: #3F8F8F;
+    background-color: #5C3F8F;
     opacity: 0.5;
 }
 
 /* === Frames === */
 frame > border {
-    border-color: #223636;
+    border-color: #222236;
 }
 
 /* === Spinbuttons === */
 spinbutton {
-    background-color: #101E1E;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #10101E;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
 }
 
 /* === Combo boxes === */
 dropdown button {
-    background-color: #223636;
-    border: 1px solid #3F8F8F;
-    color: #D4F0F0;
+    background-color: #222236;
+    border: 1px solid #5C3F8F;
+    color: #E0D4F0;
 }
 
 /* === Links === */
 link, button.link {
-    color: #8AE0E0;
+    color: #A88AE0;
 }
 
 link:hover, button.link:hover {
-    color: #D4F0F0;
+    color: #E0D4F0;
 }
 

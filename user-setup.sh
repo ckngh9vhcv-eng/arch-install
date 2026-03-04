@@ -5,21 +5,19 @@
 # =============================================================================
 set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-PURPLE='\033[0;35m'
-BOLD='\033[1m'
-NC='\033[0m'
-
-info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
-header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
-
 # SCRIPT_DIR and GIT_NAME/GIT_EMAIL are passed via environment from chroot.sh
 SCRIPT_DIR="${SCRIPT_DIR:-/root/arch-install}"
+source "$SCRIPT_DIR/lib.sh"
+
+# --- Helper: back up existing config dir before overwriting ---
+backup_config() {
+    local target="$1"
+    if [[ -e "$target" ]]; then
+        local backup="${target}.bak.$(date +%Y%m%d%H%M%S)"
+        info "Backing up existing $target → $backup"
+        mv "$target" "$backup"
+    fi
+}
 
 # =============================================================================
 # Install paru (AUR Helper) from Chaotic-AUR
@@ -33,92 +31,112 @@ info "paru installed from Chaotic-AUR"
 # =============================================================================
 # Install AUR Packages
 # =============================================================================
-header "Installing AUR Packages"
+if checkpoint_reached "aur-packages-installed"; then
+    info "AUR packages already installed — skipping"
+else
+    header "Installing AUR Packages"
 
-# Read AUR package list (strip comments and blank lines)
-AUR_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/aur.txt" | grep -v '^\s*$' | tr '\n' ' ')
+    # Read AUR package list (strip comments and blank lines)
+    AUR_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/aur.txt" | grep -v '^\s*$' | tr '\n' ' ')
 
-# --skipreview: don't prompt to review PKGBUILDs
-# --noconfirm: auto-accept provider selection (picks default=1)
-paru -S --noconfirm --needed --skipreview $AUR_PKGS
+    # --skipreview: don't prompt to review PKGBUILDs
+    # --noconfirm: auto-accept provider selection (picks default=1)
+    spinner "Installing AUR packages" paru -S --noconfirm --needed --skipreview $AUR_PKGS
 
-info "AUR packages installed"
+    info "AUR packages installed"
+    checkpoint "aur-packages-installed"
+fi
 
 # =============================================================================
 # Deploy Hyprland Configs
 # =============================================================================
-header "Deploying Hyprland Configs"
+if checkpoint_reached "configs-deployed"; then
+    info "Configs already deployed — skipping"
+else
+    header "Deploying Hyprland Configs"
 
-mkdir -p ~/.config/hypr
-cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
-cp "$SCRIPT_DIR/configs/hyprland/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
-cp "$SCRIPT_DIR/configs/hyprland/hyprlock.conf" ~/.config/hypr/hyprlock.conf
-cp "$SCRIPT_DIR/configs/hyprland/hypridle.conf" ~/.config/hypr/hypridle.conf
+    backup_config ~/.config/hypr
+    mkdir -p ~/.config/hypr
+    cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
+    cp "$SCRIPT_DIR/configs/hyprland/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
+    cp "$SCRIPT_DIR/configs/hyprland/hyprlock.conf" ~/.config/hypr/hyprlock.conf
+    cp "$SCRIPT_DIR/configs/hyprland/hypridle.conf" ~/.config/hypr/hypridle.conf
 
-info "Hyprland + Hyprlock + Hypridle config deployed"
+    info "Hyprland + Hyprlock + Hypridle config deployed"
 
-# Quickshell (desktop shell — bar, launcher, notifications, power menu, sidebar)
-mkdir -p ~/.config/quickshell
-cp -r "$SCRIPT_DIR/configs/quickshell/"* ~/.config/quickshell/
-mkdir -p ~/.local/share/quickshell
-mkdir -p ~/.local/share/cliphist
+    # Quickshell (desktop shell — bar, launcher, notifications, power menu, sidebar)
+    backup_config ~/.config/quickshell
+    mkdir -p ~/.config/quickshell
+    cp -r "$SCRIPT_DIR/configs/quickshell/"* ~/.config/quickshell/
+    mkdir -p ~/.local/share/quickshell
+    mkdir -p ~/.local/share/cliphist
 
-info "Quickshell config deployed"
+    info "Quickshell config deployed"
 
-# =============================================================================
-# Deploy Shared Configs
-# =============================================================================
-header "Deploying Shared Configs"
+    # =========================================================================
+    # Deploy Shared Configs
+    # =========================================================================
+    header "Deploying Shared Configs"
 
-# Kitty
-mkdir -p ~/.config/kitty
-cp "$SCRIPT_DIR/configs/kitty/kitty.conf" ~/.config/kitty/kitty.conf
+    # Kitty
+    backup_config ~/.config/kitty
+    mkdir -p ~/.config/kitty
+    cp "$SCRIPT_DIR/configs/kitty/kitty.conf" ~/.config/kitty/kitty.conf
 
-# Starship
-cp "$SCRIPT_DIR/configs/starship/starship.toml" ~/.config/starship.toml
+    # Starship
+    backup_config ~/.config/starship.toml
+    cp "$SCRIPT_DIR/configs/starship/starship.toml" ~/.config/starship.toml
 
-# Qt6ct
-mkdir -p ~/.config/qt6ct/colors
-cp "$SCRIPT_DIR/configs/qt6ct/qt6ct.conf" ~/.config/qt6ct/qt6ct.conf
-cp "$SCRIPT_DIR/configs/qt6ct/colors/BreezeDarkPurple.conf" ~/.config/qt6ct/colors/BreezeDarkPurple.conf
+    # Qt6ct
+    backup_config ~/.config/qt6ct
+    mkdir -p ~/.config/qt6ct/colors
+    cp "$SCRIPT_DIR/configs/qt6ct/qt6ct.conf" ~/.config/qt6ct/qt6ct.conf
+    cp "$SCRIPT_DIR/configs/qt6ct/colors/BreezeDarkPurple.conf" ~/.config/qt6ct/colors/BreezeDarkPurple.conf
 
-# GTK-3.0
-mkdir -p ~/.config/gtk-3.0
-cp "$SCRIPT_DIR/configs/gtk-3.0/settings.ini" ~/.config/gtk-3.0/settings.ini
-cp "$SCRIPT_DIR/configs/gtk-3.0/gtk.css" ~/.config/gtk-3.0/gtk.css
+    # GTK-3.0
+    backup_config ~/.config/gtk-3.0
+    mkdir -p ~/.config/gtk-3.0
+    cp "$SCRIPT_DIR/configs/gtk-3.0/settings.ini" ~/.config/gtk-3.0/settings.ini
+    cp "$SCRIPT_DIR/configs/gtk-3.0/gtk.css" ~/.config/gtk-3.0/gtk.css
 
-# GTK-4.0
-mkdir -p ~/.config/gtk-4.0
-cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
-cp "$SCRIPT_DIR/configs/gtk-4.0/gtk.css" ~/.config/gtk-4.0/gtk.css
+    # GTK-4.0
+    backup_config ~/.config/gtk-4.0
+    mkdir -p ~/.config/gtk-4.0
+    cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
+    cp "$SCRIPT_DIR/configs/gtk-4.0/gtk.css" ~/.config/gtk-4.0/gtk.css
 
-# gsettings overrides (some GTK apps read these instead of settings.ini)
-gsettings set org.gnome.desktop.interface gtk-theme 'Layan-Dark'
-gsettings set org.gnome.desktop.interface icon-theme 'Tela-circle-dark'
-gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'
-gsettings set org.gnome.desktop.interface cursor-size 24
-gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
-gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+    # gsettings overrides (some GTK apps read these instead of settings.ini)
+    gsettings set org.gnome.desktop.interface gtk-theme 'Layan-Dark'
+    gsettings set org.gnome.desktop.interface icon-theme 'Tela-circle-dark'
+    gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'
+    gsettings set org.gnome.desktop.interface cursor-size 24
+    gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
-# Replace __HOME__ placeholder in configs that need absolute paths
-sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
-sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprpaper.conf
-sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
-sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hypridle.conf
+    # Replace __HOME__ placeholder in configs that need absolute paths
+    sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
+    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprpaper.conf
+    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
+    sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hypridle.conf
 
-# MPD
-mkdir -p ~/.config/mpd ~/.local/share/mpd/playlists ~/Music
-cp "$SCRIPT_DIR/configs/mpd/mpd.conf" ~/.config/mpd/mpd.conf
+    # MPD
+    backup_config ~/.config/mpd
+    mkdir -p ~/.config/mpd ~/.local/share/mpd/playlists ~/Music
+    cp "$SCRIPT_DIR/configs/mpd/mpd.conf" ~/.config/mpd/mpd.conf
 
-# ncmpcpp
-mkdir -p ~/.config/ncmpcpp
-cp "$SCRIPT_DIR/configs/ncmpcpp/config" ~/.config/ncmpcpp/config
+    # ncmpcpp
+    backup_config ~/.config/ncmpcpp
+    mkdir -p ~/.config/ncmpcpp
+    cp "$SCRIPT_DIR/configs/ncmpcpp/config" ~/.config/ncmpcpp/config
 
-# Enable mpd and mpdris2 as systemd user services
-systemctl --user enable mpd
-systemctl --user enable mpdris2
+    # Enable mpd and mpdris2 as systemd user services
+    systemctl --user enable mpd
+    systemctl --user enable mpdris2
 
-info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp)"
+    info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp)"
+
+    checkpoint "configs-deployed"
+fi
 
 # =============================================================================
 # Deploy Zoom & Screenshot Helper Scripts
@@ -243,7 +261,7 @@ if [[ -n "${SSH_RESTORE_SOURCE:-}" ]]; then
 
     mkdir -p ~/.ssh && chmod 700 ~/.ssh
 
-    # scp from remote host (e.g., root@192.168.9.141:/root/mike-ssh-backup/)
+    # scp from remote host
     scp -o StrictHostKeyChecking=accept-new -r "${SSH_RESTORE_SOURCE}/"* ~/.ssh/ && {
         chmod 700 ~/.ssh
         chmod 600 ~/.ssh/id_* 2>/dev/null || true
