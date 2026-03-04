@@ -10,6 +10,7 @@ GridView {
     property string searchQuery: ""
     property var _matchData: ({})
     signal appLaunched()
+    signal searchWeb()
 
     // Fuzzy match: returns { score, indices } or null
     function fuzzyScore(query, target) {
@@ -331,7 +332,14 @@ GridView {
 
     // Keyboard navigation
     function handleKey(event) {
-        if (!model || model.length === 0) return false;
+        if (!model || model.length === 0) {
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                searchWeb();
+                event.accepted = true;
+                return true;
+            }
+            return false;
+        }
 
         var cols = Math.floor(width / cellWidth);
         if (cols < 1) cols = 1;
