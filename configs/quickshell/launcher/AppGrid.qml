@@ -125,7 +125,7 @@ GridView {
 
     FileView {
         id: favFileView
-        path: "/home/mike/.local/share/quickshell/favorites.json"
+        path: Quickshell.env("HOME") + "/.local/share/quickshell/favorites.json"
         atomicWrites: true
         onLoaded: {
             var content = text();

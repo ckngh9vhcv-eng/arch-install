@@ -1,15 +1,17 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
 QtObject {
     id: root
 
+    readonly property string homeDir: Quickshell.env("HOME")
     property var frequencyData: ({})
     property bool loaded: false
 
     property var fileView: FileView {
-        path: "/home/mike/.local/share/quickshell/app_frequency.json"
+        path: root.homeDir + "/.local/share/quickshell/app_frequency.json"
         atomicWrites: true
         onLoaded: {
             var content = text();

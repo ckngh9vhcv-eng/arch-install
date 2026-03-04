@@ -1,9 +1,13 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
 QtObject {
     id: root
+
+    // Home directory (portable — no hardcoded paths)
+    readonly property string homeDir: Quickshell.env("HOME")
 
     // --- Mutable color properties (defaults = Void Command) ---
     property color void_: "#06060C"
@@ -272,7 +276,7 @@ QtObject {
 
     // --- Persistence ---
     property var schemeFileView: FileView {
-        path: "/home/mike/.local/share/quickshell/color-scheme.json"
+        path: root.homeDir + "/.local/share/quickshell/color-scheme.json"
         atomicWrites: true
         onLoaded: {
             var content = text();
@@ -301,31 +305,31 @@ QtObject {
 
     // --- App config FileViews ---
     property var gtkCss3FileView: FileView {
-        path: "/home/mike/.config/gtk-3.0/gtk.css"
+        path: root.homeDir + "/.config/gtk-3.0/gtk.css"
         atomicWrites: true
     }
     property var gtkCss4FileView: FileView {
-        path: "/home/mike/.config/gtk-4.0/gtk.css"
+        path: root.homeDir + "/.config/gtk-4.0/gtk.css"
         atomicWrites: true
     }
     property var kittyFileView: FileView {
-        path: "/home/mike/.config/kitty/kitty.conf"
+        path: root.homeDir + "/.config/kitty/kitty.conf"
         atomicWrites: true
     }
     property var hyprlockFileView: FileView {
-        path: "/home/mike/.config/hypr/hyprlock.conf"
+        path: root.homeDir + "/.config/hypr/hyprlock.conf"
         atomicWrites: true
     }
     property var hyprpaperFileView: FileView {
-        path: "/home/mike/.config/hypr/hyprpaper.conf"
+        path: root.homeDir + "/.config/hypr/hyprpaper.conf"
         atomicWrites: true
     }
     property var starshipFileView: FileView {
-        path: "/home/mike/.config/starship.toml"
+        path: root.homeDir + "/.config/starship.toml"
         atomicWrites: true
     }
     property var qt6ctFileView: FileView {
-        path: "/home/mike/.config/qt6ct/colors/VoidCommand.conf"
+        path: root.homeDir + "/.config/qt6ct/colors/VoidCommand.conf"
         atomicWrites: true
     }
 
@@ -376,7 +380,7 @@ QtObject {
     function discoverWallpapers(schemeName) {
         wallpaperDiscoverProc.running = false;
         root._pendingWallpapers = [];
-        var dir = "/home/mike/wallpapers/";
+        var dir = root.homeDir + "/wallpapers/";
         wallpaperDiscoverProc.command = ["sh", "-c",
             "ls -1 " + dir + schemeName + ".png " +
             dir + schemeName + ".jpg " +
@@ -523,7 +527,7 @@ color15 " + a.color15 + "\n";
             var b = parseInt(hex.substring(5,7), 16);
             return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
         }
-        var wp = "/home/mike/wallpapers/" + wallpaperFile;
+        var wp = root.homeDir + "/wallpapers/" + wallpaperFile;
         return "background {\n\
     monitor =\n\
     path = " + wp + "\n\
@@ -583,7 +587,7 @@ input-field {\n\
     }
 
     function generateHyprpaperConf(wallpaperFile) {
-        var wp = "/home/mike/wallpapers/" + wallpaperFile;
+        var wp = root.homeDir + "/wallpapers/" + wallpaperFile;
         return "wallpaper {\n\
     monitor =\n\
     path = " + wp + "\n\

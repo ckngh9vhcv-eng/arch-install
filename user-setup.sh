@@ -51,8 +51,8 @@ header "Deploying Hyprland Configs"
 
 mkdir -p ~/.config/hypr
 cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
-cp "$SCRIPT_DIR/configs/hyprpaper/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
-cp "$SCRIPT_DIR/configs/hyprlock/hyprlock.conf" ~/.config/hypr/hyprlock.conf
+cp "$SCRIPT_DIR/configs/hyprland/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
+cp "$SCRIPT_DIR/configs/hyprland/hyprlock.conf" ~/.config/hypr/hyprlock.conf
 
 info "Hyprland + Hyprlock config deployed"
 
@@ -98,6 +98,11 @@ gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'
 gsettings set org.gnome.desktop.interface cursor-size 24
 gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+
+# Replace __HOME__ placeholder in configs that need absolute paths
+sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
+sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprpaper.conf
+sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
 
 info "Shared configs deployed (kitty, starship, qt6ct, GTK)"
 
