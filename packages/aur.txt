@@ -29,6 +29,9 @@ mgba-qt
 melonds
 scummvm
 
+# Screen recording
+gpu-screen-recorder
+
 # Desktop Shell
 quickshell-git
 greetd-tuigreet

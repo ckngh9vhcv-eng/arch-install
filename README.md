@@ -2,15 +2,9 @@
 
 Automated Arch Linux installer that replicates a NixOS Hyprland + Quickshell "Void Command" workstation.
 
-## Hardware Target
-
-- **CPU**: AMD Ryzen 9 7900X (Zen 4)
-- **GPU**: AMD RX 6600 (RDNA2)
-- **Resolution**: 2560x1440
-
 ## What You Get
 
-- **CachyOS kernel** (Zen4-optimized, Clang + ThinLTO, EEVDF scheduler)
+- **CachyOS kernel** (optimized, Clang + ThinLTO, EEVDF scheduler)
 - **BTRFS** with subvolumes (@, @home, @pkg, @log, @snapshots) + Snapper
 - **systemd-boot** bootloader
 - **Hyprland** tiling WM with Void Command purple theme (#8B6FC0)
@@ -19,6 +13,7 @@ Automated Arch Linux installer that replicates a NixOS Hyprland + Quickshell "Vo
 - **Zram** swap (25% RAM, zstd)
 - Steam, Wine, emulators, and full gaming stack
 - Docker, QEMU/KVM, Tailscale
+- **GPU auto-detection**: AMD and NVIDIA drivers installed based on detected hardware
 
 ## Usage
 
@@ -30,7 +25,7 @@ iwctl station wlan0 connect "WiFi Name"
 
 # 3. Get the installer
 pacman -Sy git
-git clone https://github.com/YOUR_REPO/arch-install.git
+git clone https://github.com/ckngh9vhcv-eng/arch-install.git
 cd arch-install
 
 # 4. Run installer
@@ -70,9 +65,7 @@ arch-install/
 │   ├── official.txt    # Pacman packages
 │   └── aur.txt         # AUR packages (installed via paru)
 ├── configs/
-│   ├── hyprland/       # Hyprland WM config
-│   ├── hyprlock/       # Lock screen config (Void Command themed)
-│   ├── hyprpaper/      # Wallpaper config
+│   ├── hyprland/       # Hyprland WM + hyprpaper + hyprlock configs
 │   ├── quickshell/     # Quickshell QML desktop shell (bar, launcher, notifications, etc.)
 │   ├── greetd/         # Login manager config (tuigreet → Hyprland)
 │   ├── kitty/          # Terminal config (Void Command color scheme)
@@ -97,4 +90,4 @@ arch-install/
 
 ## Source
 
-Ported from NixOS configuration at `~/nixos-config/`.
+Ported from a NixOS Hyprland configuration.
