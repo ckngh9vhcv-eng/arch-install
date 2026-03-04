@@ -32,6 +32,25 @@ PanelWindow {
         showing = false;
     }
 
+    function isUrl(text) {
+        if (text.indexOf("http://") === 0 || text.indexOf("https://") === 0)
+            return true;
+        return /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(text);
+    }
+
+    function getSearchUrl(text) {
+        if (text.indexOf("http://") === 0 || text.indexOf("https://") === 0)
+            return text;
+        if (isUrl(text))
+            return "https://" + text;
+        return "https://duckduckgo.com/?q=" + encodeURIComponent(text);
+    }
+
+    function openWebSearch() {
+        Qt.openUrlExternally(getSearchUrl(searchField.text));
+        hide();
+    }
+
     // Dark overlay backdrop
     FocusScope {
         anchors.fill: parent
@@ -83,7 +102,12 @@ PanelWindow {
                     SearchField {
                         id: searchField
                         anchors.horizontalCenter: parent.horizontalCenter
-                        onAccepted: appGrid.launchFirst()
+                        onAccepted: {
+                            if (appGrid.count > 0)
+                                appGrid.launchFirst();
+                            else if (searchField.text.length > 0)
+                                launcher.openWebSearch();
+                        }
                     }
 
                     // Favorites row — visible only when search is empty
@@ -168,9 +192,49 @@ PanelWindow {
                     AppGrid {
                         id: appGrid
                         width: parent.width
-                        height: parent.height - searchField.height - (favRow.visible ? favRow.height + 16 : 0) - 16
+                        height: parent.height - searchField.height
+                               - (favRow.visible ? favRow.height + 16 : 0)
+                               - (webFallback.visible ? webFallback.height + 16 : 0)
+                               - 16
                         searchQuery: searchField.text
                         onAppLaunched: launcher.hide()
+                        onSearchWeb: launcher.openWebSearch()
+                    }
+
+                    // Web search / URL fallback row
+                    Rectangle {
+                        id: webFallback
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width
+                        height: 36
+                        radius: Theme.radiusInner
+                        visible: searchField.text.length > 0
+                        color: webFallbackMouse.containsMouse
+                               ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25)
+                               : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.08)
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: launcher.isUrl(searchField.text)
+                                  ? "Open " + searchField.text
+                                  : "Search DuckDuckGo for '" + searchField.text + "'"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            color: Theme.accentBright
+                            elide: Text.ElideRight
+                            width: parent.width - 24
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+
+                        MouseArea {
+                            id: webFallbackMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: launcher.openWebSearch()
+                        }
+
+                        Behavior on color { ColorAnimation { duration: 150 } }
                     }
                 }
 
