@@ -7,18 +7,15 @@ obsidian-bin
 visual-studio-code-bin
 vesktop-bin
 parsec-bin
-moonlight-qt
 
 # Gaming
 xpadneo-dkms
-lutris
 protonplus
 faugus-launcher
 heroic-games-launcher-bin
 prismlauncher
 
 # Emulators
-retroarch
 dolphin-emu
 pcsx2
 rpcs3-bin
@@ -27,7 +24,6 @@ cemu
 ryujinx
 mgba-qt
 melonds
-scummvm
 
 # Screen recording
 gpu-screen-recorder

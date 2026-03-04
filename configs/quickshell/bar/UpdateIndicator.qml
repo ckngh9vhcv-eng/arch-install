@@ -11,6 +11,7 @@ Row {
     property string updateList: ""
     property string tooltipText: "Checking for updates..."
     property bool _checking: false
+    property var _buffer: []
 
     Text {
         id: iconText
@@ -76,30 +77,30 @@ Row {
         command: ["sh", "-c", "{ checkupdates 2>/dev/null; paru -Qua 2>/dev/null; }"]
         stdout: SplitParser {
             onRead: data => {
-                var lines = data.trim().split("\n").filter(l => l.length > 0);
-                root.updateCount = lines.length;
-                if (lines.length === 0) {
-                    root.updateList = "";
-                    root.tooltipText = "System is up to date";
-                } else {
-                    var shown = lines.slice(0, 20);
-                    root.updateList = shown.join("\n");
-                    root.tooltipText = lines.length + " update" + (lines.length !== 1 ? "s" : "") + " available\n" + root.updateList;
-                    if (lines.length > 20) {
-                        root.tooltipText += "\n... and " + (lines.length - 20) + " more";
-                    }
-                }
+                var line = data.trim();
+                if (line.length > 0) root._buffer.push(line);
             }
         }
         onRunningChanged: {
-            if (running) root._checking = true;
+            if (running) {
+                root._checking = true;
+                root._buffer = [];
+            }
         }
         onExited: function(exitCode, exitStatus) {
             root._checking = false;
-            // checkupdates returns exit code 2 when no updates
-            if (exitCode !== 0 && root.updateCount === 0) {
-                root.updateCount = 0;
+            var lines = root._buffer;
+            root.updateCount = lines.length;
+            if (lines.length === 0) {
+                root.updateList = "";
                 root.tooltipText = "System is up to date";
+            } else {
+                var shown = lines.slice(0, 20);
+                root.updateList = shown.join("\n");
+                root.tooltipText = lines.length + " update" + (lines.length !== 1 ? "s" : "") + " available\n" + root.updateList;
+                if (lines.length > 20) {
+                    root.tooltipText += "\n... and " + (lines.length - 20) + " more";
+                }
             }
         }
     }

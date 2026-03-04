@@ -6,8 +6,7 @@ import ".."
 ColumnLayout {
     id: scheduleRoot
     spacing: 12
-    visible: ShellGlobals.nightLightMode !== "manual"
-             || modeRow.visible
+    visible: true
 
     // Mode selector row
     RowLayout {

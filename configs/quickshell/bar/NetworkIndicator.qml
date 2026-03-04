@@ -100,6 +100,7 @@ Text {
         property string iface: interfaceName
         command: ["sh", "-c", "cat /sys/class/net/" + iface + "/statistics/rx_bytes /sys/class/net/" + iface + "/statistics/tx_bytes 2>/dev/null"]
         stdout: SplitParser {
+            splitMarker: ""
             onRead: data => {
                 var lines = data.trim().split("\n");
                 if (lines.length >= 2) {

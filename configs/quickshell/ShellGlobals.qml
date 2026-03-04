@@ -10,6 +10,9 @@ QtObject {
     property bool gameMode: false
     property bool recording: false
     property bool dockPinned: false
+
+    onDoNotDisturbChanged: saveState()
+    onDockPinnedChanged: saveState()
     property var favorites: []
 
     property var favoritesFile: FileView {
@@ -220,5 +223,70 @@ QtObject {
 
     function clearNotificationHistory() {
         notificationHistory.clear();
+    }
+
+    // === Shared Game Mode ===
+    property var gameModeOnProc: Process {
+        command: ["sh", "-c", "hyprctl keyword animations:enabled false && hyprctl keyword decoration:blur:enabled false && hyprctl keyword decoration:shadow:enabled false && hyprctl keyword decoration:dim_inactive false && hyprctl keyword decoration:rounding 0 && hyprctl keyword general:gaps_in 0 && hyprctl keyword general:gaps_out 0"]
+    }
+    property var gameModeOffProc: Process {
+        command: ["sh", "-c", "hyprctl keyword animations:enabled true && hyprctl keyword decoration:blur:enabled true && hyprctl keyword decoration:shadow:enabled true && hyprctl keyword decoration:dim_inactive true && hyprctl keyword decoration:rounding 10 && hyprctl keyword general:gaps_in 5 && hyprctl keyword general:gaps_out 10"]
+    }
+
+    function toggleGameMode() {
+        gameMode = !gameMode;
+        if (gameMode) {
+            gameModeOnProc.running = true;
+        } else {
+            gameModeOffProc.running = true;
+        }
+        saveState();
+    }
+
+    // === Shared Recording ===
+    property var recordStartProc: Process {
+        command: ["sh", "-c", "mkdir -p ~/Videos/recordings && gpu-screen-recorder -w screen -f 60 -a default_output -o ~/Videos/recordings/recording_$(date +%Y%m%d_%H%M%S).mp4"]
+    }
+    property var recordStopProc: Process {
+        command: ["pkill", "-f", "-SIGINT", "gpu-screen-recorder"]
+    }
+
+    function toggleRecording() {
+        recording = !recording;
+        if (recording) {
+            recordStartProc.running = true;
+        } else {
+            recordStopProc.running = true;
+        }
+    }
+
+    function stopRecording() {
+        recording = false;
+        recordStopProc.running = true;
+    }
+
+    // === State Persistence ===
+    property var stateFile: FileView {
+        path: root.homeDir + "/.local/share/quickshell/state.json"
+        onLoaded: {
+            var content = text();
+            if (content && content.length > 0) {
+                try {
+                    var s = JSON.parse(content);
+                    if (s.doNotDisturb !== undefined) root.doNotDisturb = s.doNotDisturb;
+                    if (s.dockPinned !== undefined) root.dockPinned = s.dockPinned;
+                    if (s.gameMode !== undefined) root.gameMode = s.gameMode;
+                } catch (e) {}
+            }
+        }
+    }
+
+    function saveState() {
+        var s = JSON.stringify({
+            doNotDisturb: doNotDisturb,
+            dockPinned: dockPinned,
+            gameMode: gameMode
+        }, null, 2);
+        stateFile.setText(s);
     }
 }

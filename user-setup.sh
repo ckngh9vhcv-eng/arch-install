@@ -53,8 +53,9 @@ mkdir -p ~/.config/hypr
 cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
 cp "$SCRIPT_DIR/configs/hyprland/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
 cp "$SCRIPT_DIR/configs/hyprland/hyprlock.conf" ~/.config/hypr/hyprlock.conf
+cp "$SCRIPT_DIR/configs/hyprland/hypridle.conf" ~/.config/hypr/hypridle.conf
 
-info "Hyprland + Hyprlock config deployed"
+info "Hyprland + Hyprlock + Hypridle config deployed"
 
 # Quickshell (desktop shell — bar, launcher, notifications, power menu, sidebar)
 mkdir -p ~/.config/quickshell
@@ -103,6 +104,7 @@ gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
 sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprpaper.conf
 sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hyprlock.conf
+sed -i "s|__HOME__|$HOME|g" ~/.config/hypr/hypridle.conf
 
 # MPD
 mkdir -p ~/.config/mpd ~/.local/share/mpd/playlists ~/Music
@@ -111,6 +113,10 @@ cp "$SCRIPT_DIR/configs/mpd/mpd.conf" ~/.config/mpd/mpd.conf
 # ncmpcpp
 mkdir -p ~/.config/ncmpcpp
 cp "$SCRIPT_DIR/configs/ncmpcpp/config" ~/.config/ncmpcpp/config
+
+# Enable mpd and mpdris2 as systemd user services
+systemctl --user enable mpd
+systemctl --user enable mpdris2
 
 info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp)"
 

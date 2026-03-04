@@ -41,7 +41,7 @@ ColumnLayout {
     // Scrollable notification list
     ListView {
         Layout.fillWidth: true
-        Layout.fillHeight: true
+        Layout.preferredHeight: Math.min(ShellGlobals.notificationHistory.count * 56, 300)
         clip: true
         spacing: 6
         model: ShellGlobals.notificationHistory

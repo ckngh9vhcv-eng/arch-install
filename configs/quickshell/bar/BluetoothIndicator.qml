@@ -5,11 +5,14 @@ import ".."
 Text {
     font.family: Theme.fontFamily
     font.pixelSize: Theme.fontBody
-    color: Theme.info
+    color: btState === "unavailable" ? Theme.textDim
+         : btState === "connected" ? Theme.info
+         : Theme.textSecondary
 
     property string status: "\u{f294}"
     property string tooltipText: "No device connected"
     property string deviceName: ""
+    property string btState: "idle"
 
     text: status
 
@@ -32,7 +35,7 @@ Text {
             onRead: data => {
                 if (data.indexOf("not available") !== -1) {
                     status = "\u{f294}";
-                    color = Theme.textDim;
+                    btState = "unavailable";
                     tooltipText = "Bluetooth unavailable";
                     deviceName = "";
                 } else if (data.indexOf("Name:") !== -1) {
@@ -40,12 +43,12 @@ Text {
                     if (match) {
                         deviceName = match[1];
                         status = "\u{f294} " + match[1];
-                        color = Theme.info;
+                        btState = "connected";
                         tooltipText = match[1];
                     }
                 } else {
                     status = "\u{f294}";
-                    color = Theme.textSecondary;
+                    btState = "idle";
                     tooltipText = "No device connected";
                     deviceName = "";
                 }

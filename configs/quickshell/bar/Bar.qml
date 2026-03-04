@@ -71,6 +71,23 @@ PanelWindow {
         id: barTooltip
     }
 
+    // Click-outside backdrop for popups
+    PanelWindow {
+        anchors.top: true
+        anchors.bottom: true
+        anchors.left: true
+        anchors.right: true
+        visible: bar.activePopup !== ""
+        focusable: false
+        aboveWindows: true
+        color: "transparent"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: bar.closePopups()
+        }
+    }
+
     MediaPopup {
         id: mediaPopup
         targetX: mediaPlayer.x + 12
@@ -146,27 +163,69 @@ PanelWindow {
 
             BarSeparator { visible: ShellGlobals.recording }
 
-            PowerProfileIndicator {}
+            PowerProfileIndicator {
+                id: powerProfileInd
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(powerProfileInd.tooltipText, powerProfileInd.mapToItem(null, powerProfileInd.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator {}
 
-            WeatherIndicator {}
+            WeatherIndicator {
+                id: weatherInd
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(weatherInd.tooltipText, weatherInd.mapToItem(null, weatherInd.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator { visible: ShellGlobals.locationLat !== 0 && ShellGlobals.weatherApiKey.length > 0 }
 
-            AudioControl {}
+            AudioControl {
+                id: audioControl
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(audioControl.tooltipText, audioControl.mapToItem(null, audioControl.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator {}
 
-            NetworkIndicator {}
+            NetworkIndicator {
+                id: networkInd
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(networkInd.tooltipText, networkInd.mapToItem(null, networkInd.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator {}
 
-            BluetoothIndicator {}
+            BluetoothIndicator {
+                id: bluetoothInd
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(bluetoothInd.tooltipText, bluetoothInd.mapToItem(null, bluetoothInd.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator {}
 
-            UpdateIndicator {}
+            UpdateIndicator {
+                id: updateInd
+                HoverHandler {
+                    onHoveredChanged: hovered
+                        ? bar.showTooltip(updateInd.tooltipText, updateInd.mapToItem(null, updateInd.width / 2, 0).x)
+                        : bar.hideTooltip()
+                }
+            }
 
             BarSeparator {}
 

@@ -41,14 +41,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            ShellGlobals.recording = false;
-            recordStopFromBar.running = true;
-        }
-
-        Process {
-            id: recordStopFromBar
-            command: ["pkill", "-SIGINT", "gpu-screen-rec"]
-        }
+        onClicked: ShellGlobals.stopRecording()
     }
 }

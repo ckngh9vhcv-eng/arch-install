@@ -261,21 +261,7 @@ ColumnLayout {
             activeColor: Theme.warning
 
             onToggled: {
-                ShellGlobals.gameMode = !ShellGlobals.gameMode;
-                if (ShellGlobals.gameMode) {
-                    gameModeOnProc.running = true;
-                } else {
-                    gameModeOffProc.running = true;
-                }
-            }
-
-            Process {
-                id: gameModeOnProc
-                command: ["sh", "-c", "hyprctl keyword animations:enabled false && hyprctl keyword decoration:blur:enabled false && hyprctl keyword decoration:shadow:enabled false && hyprctl keyword decoration:dim_inactive false && hyprctl keyword decoration:rounding 0 && hyprctl keyword general:gaps_in 0 && hyprctl keyword general:gaps_out 0"]
-            }
-            Process {
-                id: gameModeOffProc
-                command: ["sh", "-c", "hyprctl keyword animations:enabled true && hyprctl keyword decoration:blur:enabled true && hyprctl keyword decoration:shadow:enabled true && hyprctl keyword decoration:dim_inactive true && hyprctl keyword decoration:rounding 10 && hyprctl keyword general:gaps_in 5 && hyprctl keyword general:gaps_out 10"]
+                ShellGlobals.toggleGameMode();
             }
         }
 
@@ -334,21 +320,7 @@ ColumnLayout {
             activeColor: Theme.danger
 
             onToggled: {
-                ShellGlobals.recording = !ShellGlobals.recording;
-                if (ShellGlobals.recording) {
-                    recordStartProc.running = true;
-                } else {
-                    recordStopProc.running = true;
-                }
-            }
-
-            Process {
-                id: recordStartProc
-                command: ["sh", "-c", "mkdir -p ~/Videos/recordings && gpu-screen-recorder -w screen -f 60 -a default_output -o ~/Videos/recordings/recording_$(date +%Y%m%d_%H%M%S).mp4"]
-            }
-            Process {
-                id: recordStopProc
-                command: ["pkill", "-SIGINT", "gpu-screen-rec"]
+                ShellGlobals.toggleRecording();
             }
         }
     }

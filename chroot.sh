@@ -262,6 +262,7 @@ mkdir -p /etc/greetd
 cp "$SCRIPT_DIR/configs/greetd/config.toml" /etc/greetd/config.toml
 
 systemctl enable greetd.service
+systemctl disable getty@tty1.service
 
 info "greetd login manager enabled"
 
@@ -321,20 +322,6 @@ else
 fi
 
 info "Snapper root config created (manual — D-Bus unavailable in chroot)"
-
-# =============================================================================
-# TLP Power Management
-# =============================================================================
-header "Configuring TLP"
-
-cat > /etc/tlp.conf <<EOF
-# Performance governor on AC
-CPU_SCALING_GOVERNOR_ON_AC=performance
-CPU_ENERGY_PERF_POLICY_ON_AC=performance
-CPU_BOOST_ON_AC=1
-EOF
-
-info "TLP configured for performance on AC"
 
 # =============================================================================
 # User Setup (runs as $USERNAME inside chroot)
