@@ -89,6 +89,7 @@ cp "$SCRIPT_DIR/configs/gtk-3.0/gtk.css" ~/.config/gtk-3.0/gtk.css
 # GTK-4.0
 mkdir -p ~/.config/gtk-4.0
 cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
+cp "$SCRIPT_DIR/configs/gtk-4.0/gtk.css" ~/.config/gtk-4.0/gtk.css
 
 # gsettings overrides (some GTK apps read these instead of settings.ini)
 gsettings set org.gnome.desktop.interface gtk-theme 'Layan-Dark'
