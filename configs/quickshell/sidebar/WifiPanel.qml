@@ -129,9 +129,7 @@ ColumnLayout {
 
                         // Signal strength icon
                         Text {
-                            text: model.signal > 75 ? "\u{f1eb}" :
-                                  model.signal > 50 ? "\u{f1eb}" :
-                                  model.signal > 25 ? "\u{f1eb}" : "\u{f1eb}"
+                            text: "\u{f1eb}"
                             font.family: Theme.fontFamily
                             font.pixelSize: 14
                             color: model.connected ? Theme.accent :
@@ -235,7 +233,7 @@ ColumnLayout {
 
                 Process {
                     id: wifiDisconnectProc
-                    command: ["nmcli", "connection", "down", model.ssid]
+                    command: ["nmcli", "connection", "down", "id", model.ssid]
                 }
 
                 MouseArea {

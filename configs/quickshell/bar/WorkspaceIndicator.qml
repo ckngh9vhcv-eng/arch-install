@@ -26,7 +26,7 @@ RowLayout {
 
             width: isActive ? 18 : 12
             height: 12
-            radius: isActive ? 6 : 6
+            radius: 6
 
             color: isActive ? Theme.accent
                  : isOccupied ? Theme.textDim

@@ -29,6 +29,7 @@ xdg-desktop-portal-hyprland
 pacman-contrib
 hyprpaper
 hyprlock
+hypridle
 wl-clipboard
 grim
 slurp
@@ -89,6 +90,10 @@ curl
 # Gaming
 steam
 gamemode
+retroarch
+moonlight-qt
+lutris
+scummvm
 linux-headers
 dkms
 lib32-mesa

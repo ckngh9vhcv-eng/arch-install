@@ -61,13 +61,7 @@ Item {
                 if (!isNaN(pct)) {
                     root.value = pct / 100.0;
                     root.muted = false;
-                    if (root.value > 0.66) {
-                        root.icon = "\u{f185}";
-                    } else if (root.value > 0.33) {
-                        root.icon = "\u{f111}";
-                    } else {
-                        root.icon = "\u{f186}";
-                    }
+                    root.icon = "\u{f185}";
                     root.showing = true;
                     hideTimer.restart();
                 }
