@@ -9,6 +9,34 @@ QtObject {
     property bool doNotDisturb: false
     property bool gameMode: false
     property bool recording: false
+    property bool dockPinned: false
+    property var favorites: []
+
+    property var favoritesFile: FileView {
+        path: root.homeDir + "/.local/share/quickshell/favorites.json"
+        onLoaded: {
+            var content = text();
+            if (content && content.length > 0) {
+                try { root.favorites = JSON.parse(content); }
+                catch (e) { root.favorites = []; }
+            }
+        }
+    }
+
+    function isFavorite(appId) {
+        return favorites.indexOf(appId) !== -1;
+    }
+
+    function toggleFavorite(appId) {
+        var idx = favorites.indexOf(appId);
+        if (idx >= 0) {
+            favorites.splice(idx, 1);
+        } else {
+            favorites.push(appId);
+        }
+        favorites = favorites.slice();
+        favoritesFile.setText(JSON.stringify(favorites));
+    }
 
     // Notification history (capped at 50)
     property ListModel notificationHistory: ListModel {}

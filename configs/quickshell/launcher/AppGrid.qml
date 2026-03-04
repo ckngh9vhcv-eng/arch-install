@@ -174,7 +174,7 @@ GridView {
 
                 Text {
                     anchors.centerIn: parent
-                    text: grid.contextTarget && isFavorite(grid.contextTarget.id) ? "Unpin" : "Pin to favorites"
+                    text: grid.contextTarget && isFavorite(grid.contextTarget.id) ? "Unpin from Dock" : "Pin to Dock"
                     font.family: Theme.fontFamily
                     font.pixelSize: Theme.fontLabel
                     color: Theme.textPrimary
@@ -202,42 +202,15 @@ GridView {
         onClicked: grid.contextMenuVisible = false
     }
 
-    // Favorites support
-    property var favorites: []
+    // Favorites — delegated to ShellGlobals singleton
+    property var favorites: ShellGlobals.favorites
 
     function isFavorite(appId) {
-        return favorites.indexOf(appId) !== -1;
+        return ShellGlobals.isFavorite(appId);
     }
 
     function toggleFavorite(appId) {
-        var idx = favorites.indexOf(appId);
-        if (idx >= 0) {
-            favorites.splice(idx, 1);
-        } else {
-            favorites.push(appId);
-        }
-        favorites = favorites.slice(); // trigger binding update
-        saveFavorites();
-    }
-
-    function saveFavorites() {
-        favFileView.setText(JSON.stringify(favorites));
-    }
-
-    FileView {
-        id: favFileView
-        path: Quickshell.env("HOME") + "/.local/share/quickshell/favorites.json"
-        atomicWrites: true
-        onLoaded: {
-            var content = text();
-            if (content && content.length > 0) {
-                try {
-                    grid.favorites = JSON.parse(content);
-                } catch (e) {
-                    grid.favorites = [];
-                }
-            }
-        }
+        ShellGlobals.toggleFavorite(appId);
     }
 
     delegate: Item {
@@ -315,8 +288,9 @@ GridView {
                 onClicked: function(event) {
                     if (event.button === Qt.RightButton) {
                         grid.contextTarget = modelData;
-                        grid.contextMenuX = parent.x + event.x;
-                        grid.contextMenuY = parent.y + event.y;
+                        var pos = cardMouse.mapToItem(grid, event.x, event.y);
+                        grid.contextMenuX = pos.x;
+                        grid.contextMenuY = pos.y;
                         grid.contextMenuVisible = true;
                     } else {
                         AppFrequency.recordLaunch(modelData.id);

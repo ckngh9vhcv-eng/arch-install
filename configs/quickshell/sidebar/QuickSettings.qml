@@ -244,6 +244,17 @@ ColumnLayout {
 
         ToggleButton {
             Layout.fillWidth: true
+            icon: "\u{f2d2}"
+            label: "Dock"
+            active: ShellGlobals.dockPinned
+
+            onToggled: {
+                ShellGlobals.dockPinned = !ShellGlobals.dockPinned;
+            }
+        }
+
+        ToggleButton {
+            Layout.fillWidth: true
             icon: "\u{f11b}"
             label: "Game Mode"
             active: ShellGlobals.gameMode
