@@ -29,6 +29,13 @@ PanelWindow {
     property int todayMonth: new Date().getMonth()
     property int todayYear: new Date().getFullYear()
 
+    property int selectedDay: 0
+    property string selectedDateKey: ""
+
+    // Event data — empty map for now, future CalDAV will populate this
+    // Format: { "2026-03-15": [{time: "10:00", summary: "Meeting"}, ...], ... }
+    property var eventsByDate: ({})
+
     function daysInMonth(month, year) {
         return new Date(year, month + 1, 0).getDate();
     }
@@ -38,6 +45,8 @@ PanelWindow {
     }
 
     function prevMonth() {
+        selectedDay = 0;
+        selectedDateKey = "";
         if (displayMonth === 0) {
             displayMonth = 11;
             displayYear--;
@@ -47,6 +56,8 @@ PanelWindow {
     }
 
     function nextMonth() {
+        selectedDay = 0;
+        selectedDateKey = "";
         if (displayMonth === 11) {
             displayMonth = 0;
             displayYear++;
@@ -61,6 +72,8 @@ PanelWindow {
         return names[m];
     }
 
+    function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
     // Build 42-cell grid model (6 rows x 7 cols)
     property var calendarCells: {
         var cells = [];
@@ -69,20 +82,28 @@ PanelWindow {
 
         // Previous month trailing days
         var prevDays = displayMonth === 0 ? daysInMonth(11, displayYear - 1) : daysInMonth(displayMonth - 1, displayYear);
+        var prevMonth = displayMonth === 0 ? 11 : displayMonth - 1;
+        var prevYear = displayMonth === 0 ? displayYear - 1 : displayYear;
         for (var i = startDay - 1; i >= 0; i--) {
-            cells.push({ day: prevDays - i, current: false, today: false });
+            var pd = prevDays - i;
+            cells.push({ day: pd, current: false, today: false,
+                         dateKey: prevYear + "-" + pad2(prevMonth + 1) + "-" + pad2(pd) });
         }
 
         // Current month days
         for (var d = 1; d <= totalDays; d++) {
             var isToday = (d === todayDate && displayMonth === todayMonth && displayYear === todayYear);
-            cells.push({ day: d, current: true, today: isToday });
+            cells.push({ day: d, current: true, today: isToday,
+                         dateKey: displayYear + "-" + pad2(displayMonth + 1) + "-" + pad2(d) });
         }
 
         // Next month leading days
+        var nextMonth = displayMonth === 11 ? 0 : displayMonth + 1;
+        var nextYear = displayMonth === 11 ? displayYear + 1 : displayYear;
         var remaining = 42 - cells.length;
         for (var n = 1; n <= remaining; n++) {
-            cells.push({ day: n, current: false, today: false });
+            cells.push({ day: n, current: false, today: false,
+                         dateKey: nextYear + "-" + pad2(nextMonth + 1) + "-" + pad2(n) });
         }
 
         return cells;
@@ -253,16 +274,29 @@ PanelWindow {
 
                             Item {
                                 width: (contentCol.width - 32) / 7
-                                height: 30
+                                height: 34
+
+                                property bool isSelected: modelData.current && modelData.day === popup.selectedDay
+                                                         && popup.selectedDay > 0
+                                property bool hasEvents: popup.eventsByDate[modelData.dateKey] !== undefined
+                                                        && popup.eventsByDate[modelData.dateKey].length > 0
 
                                 MouseArea {
                                     id: dayCellMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
+                                    cursorShape: modelData.current ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    onClicked: {
+                                        if (modelData.current) {
+                                            popup.selectedDay = modelData.day;
+                                            popup.selectedDateKey = modelData.dateKey;
+                                        }
+                                    }
                                 }
 
                                 Rectangle {
-                                    anchors.centerIn: parent
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    y: 2
                                     width: 26
                                     height: 26
                                     radius: 13
@@ -270,18 +304,81 @@ PanelWindow {
                                            (dayCellMouse.containsMouse && modelData.current
                                             ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15)
                                             : "transparent")
+                                    border.width: isSelected && !modelData.today ? 2 : 0
+                                    border.color: Theme.accent
 
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
 
                                 Text {
-                                    anchors.centerIn: parent
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    y: 2 + (26 - height) / 2
                                     text: modelData.day
                                     font.family: Theme.fontFamily
                                     font.pixelSize: Theme.fontLabel
                                     color: modelData.today ? Theme.void_ :
                                            modelData.current ? Theme.textPrimary : Theme.textDim
                                     font.bold: modelData.today
+                                }
+
+                                // Event dot indicator
+                                Rectangle {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    y: 30
+                                    width: 4
+                                    height: 4
+                                    radius: 2
+                                    color: Theme.accent
+                                    visible: hasEvents
+                                }
+                            }
+                        }
+                    }
+                    // Event list for selected day
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+                        visible: popup.selectedDay > 0
+                                 && popup.eventsByDate[popup.selectedDateKey] !== undefined
+                                 && popup.eventsByDate[popup.selectedDateKey].length > 0
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        Text {
+                            text: "Events for " + monthName(displayMonth) + " " + popup.selectedDay
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            color: Theme.textSecondary
+                        }
+
+                        Repeater {
+                            model: popup.eventsByDate[popup.selectedDateKey] || []
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: modelData.time || ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontLabel
+                                    color: Theme.accent
+                                    visible: text.length > 0
+                                }
+
+                                Text {
+                                    text: modelData.summary || ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: Theme.fontLabel
+                                    color: Theme.textPrimary
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
                                 }
                             }
                         }
@@ -299,6 +396,8 @@ PanelWindow {
             todayYear = now.getFullYear();
             displayMonth = todayMonth;
             displayYear = todayYear;
+            selectedDay = 0;
+            selectedDateKey = "";
         }
     }
 

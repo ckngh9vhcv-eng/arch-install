@@ -127,23 +127,25 @@ ColumnLayout {
         ToggleButton {
             Layout.fillWidth: true
             icon: "\u{f0eb}"
-            label: "Night Light"
-            active: nightLightActive
-
-            property bool nightLightActive: false
+            label: ShellGlobals.nightLightMode === "manual" ? "Night Light"
+                 : ShellGlobals.nightLightMode === "sunset" ? "Night Light (Sunset)"
+                 : "Night Light (Sched)"
+            active: ShellGlobals.nightLightActive
 
             onToggled: {
-                nightLightActive = !nightLightActive;
-                if (nightLightActive) {
-                    nightLightOnProc.running = true;
-                } else {
-                    nightLightOffProc.running = true;
+                if (ShellGlobals.nightLightMode === "manual") {
+                    ShellGlobals.nightLightActive = !ShellGlobals.nightLightActive;
+                    if (ShellGlobals.nightLightActive) {
+                        nightLightOnProc.running = true;
+                    } else {
+                        nightLightOffProc.running = true;
+                    }
                 }
             }
 
             Process {
                 id: nightLightOnProc
-                command: ["hyprctl", "hyprsunset", "temperature", "3500"]
+                command: ["hyprctl", "hyprsunset", "temperature", ShellGlobals.nightLightTemp.toString()]
             }
             Process {
                 id: nightLightOffProc
@@ -267,6 +269,53 @@ ColumnLayout {
         }
 
         ToggleButton {
+            id: powerToggle
+            Layout.fillWidth: true
+            icon: powerProfile === "performance" ? "\u{f0e7}" :
+                  powerProfile === "power-saver" ? "\u{f06c}" : "\u{f24e}"
+            label: powerProfile === "performance" ? "Performance" :
+                   powerProfile === "power-saver" ? "Power Saver" : "Balanced"
+            active: powerProfile !== "balanced"
+            activeColor: powerProfile === "performance" ? Theme.warning : Theme.success
+
+            property string powerProfile: "balanced"
+
+            onToggled: {
+                var next = powerProfile === "balanced" ? "performance" :
+                           powerProfile === "performance" ? "power-saver" : "balanced";
+                powerSetProc.command = ["powerprofilesctl", "set", next];
+                powerSetProc.running = true;
+            }
+
+            Process {
+                id: powerPollProc
+                command: ["powerprofilesctl", "get"]
+                stdout: SplitParser {
+                    onRead: data => {
+                        var p = data.trim();
+                        if (p.length > 0) powerToggle.powerProfile = p;
+                    }
+                }
+            }
+
+            Process {
+                id: powerSetProc
+                command: ["true"]
+                onRunningChanged: {
+                    if (!running) powerPollProc.running = true;
+                }
+            }
+
+            Timer {
+                interval: 10000
+                running: true
+                repeat: true
+                triggeredOnStart: true
+                onTriggered: powerPollProc.running = true
+            }
+        }
+
+        ToggleButton {
             Layout.fillWidth: true
             icon: "\u{f111}"
             label: "Record"
@@ -291,6 +340,10 @@ ColumnLayout {
                 command: ["pkill", "-SIGINT", "gpu-screen-rec"]
             }
         }
+    }
+
+    NightLightSchedule {
+        Layout.fillWidth: true
     }
 
     // Toggle button component

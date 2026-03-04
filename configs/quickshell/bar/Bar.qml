@@ -146,6 +146,14 @@ PanelWindow {
 
             BarSeparator { visible: ShellGlobals.recording }
 
+            PowerProfileIndicator {}
+
+            BarSeparator {}
+
+            WeatherIndicator {}
+
+            BarSeparator { visible: ShellGlobals.locationLat !== 0 && ShellGlobals.weatherApiKey.length > 0 }
+
             AudioControl {}
 
             BarSeparator {}

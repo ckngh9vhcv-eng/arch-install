@@ -251,6 +251,29 @@ Item {
                             }
                         }
 
+                        // Divider — weather
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                            visible: ShellGlobals.weatherApiKey.length > 0
+                        }
+
+                        Text {
+                            text: "WEATHER"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.fontLabel
+                            font.bold: true
+                            font.letterSpacing: 2
+                            color: Theme.textDim
+                            visible: ShellGlobals.weatherApiKey.length > 0
+                        }
+
+                        WeatherPanel {
+                            Layout.fillWidth: true
+                        }
+
                         // Divider
                         Rectangle {
                             Layout.fillWidth: true
@@ -292,6 +315,18 @@ Item {
                         }
 
                         QuickSettings {
+                            Layout.fillWidth: true
+                        }
+
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Theme.accentDim
+                            opacity: 0.5
+                        }
+
+                        AppMixer {
                             Layout.fillWidth: true
                         }
 
