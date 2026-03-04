@@ -4,20 +4,8 @@
 # =============================================================================
 set -euo pipefail
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-PURPLE='\033[0;35m'
-BOLD='\033[1m'
-NC='\033[0m'
-
-info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
-error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
-header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
-
 SCRIPT_DIR="/root/arch-install"
+source "$SCRIPT_DIR/lib.sh"
 
 # Load hardware detection + user config
 source /root/hw-detect
@@ -27,19 +15,24 @@ source /root/hw-detect
 # =============================================================================
 header "Locale & Timezone"
 
+# Configurable locale/keymap — override via environment or hw-detect
+LOCALE="${LOCALE:-en_US.UTF-8}"
+KEYMAP="${KEYMAP:-us}"
+
 ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 hwclock --systohc
 
-sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+sed -i "s/^#${LOCALE} /${LOCALE} /" /etc/locale.gen
 locale-gen
 
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "LANG=${LOCALE}" > /etc/locale.conf
 
 # Create vconsole.conf (needed by mkinitcpio sd-vconsole hook)
-echo "KEYMAP=us" > /etc/vconsole.conf
+echo "KEYMAP=${KEYMAP}" > /etc/vconsole.conf
 
 info "Timezone: $TIMEZONE"
-info "Locale: en_US.UTF-8"
+info "Locale: $LOCALE"
+info "Keymap: $KEYMAP"
 
 # =============================================================================
 # Hostname
@@ -59,20 +52,35 @@ info "Hostname set to: $HOSTNAME"
 # =============================================================================
 # CachyOS Repository
 # =============================================================================
-header "Setting Up CachyOS Repository"
+if checkpoint_reached "cachyos-keys"; then
+    info "CachyOS repo already configured — skipping"
+else
+    header "Setting Up CachyOS Repository"
 
-info "Downloading CachyOS repo setup..."
-cd /tmp
-curl -O https://mirror.cachyos.org/cachyos-repo.tar.xz
-tar xvf cachyos-repo.tar.xz
-cd cachyos-repo
+    info "Downloading CachyOS repo setup..."
+    cd /tmp
+    curl -O https://mirror.cachyos.org/cachyos-repo.tar.xz
+    tar xvf cachyos-repo.tar.xz
+    cd cachyos-repo
 
-info "Running CachyOS repo setup (auto-detects CPU arch)..."
-# Use echo to answer prompts; avoid `yes |` which causes SIGPIPE with pipefail
-echo "Y" | ./cachyos-repo.sh || true
+    info "Running CachyOS repo setup (auto-detects CPU arch)..."
+    # Temporarily allow non-zero exit — script may return 1 even on success
+    set +e
+    echo "Y" | ./cachyos-repo.sh
+    _cachyos_rc=$?
+    set -e
 
-cd /tmp
-rm -rf cachyos-repo cachyos-repo.tar.xz
+    cd /tmp
+    rm -rf cachyos-repo cachyos-repo.tar.xz
+
+    # Validate CachyOS keys were imported successfully
+    if ! pacman-key --list-keys 2>/dev/null | grep -qi cachyos; then
+        error "CachyOS keyring import failed (exit code $_cachyos_rc). Check network and retry."
+    fi
+    info "CachyOS keys verified"
+
+    checkpoint "cachyos-keys"
+fi
 
 # Enable multilib repo (needed for lib32-* gaming packages)
 if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
@@ -87,16 +95,23 @@ info "Pacman parallel downloads set to 10"
 # =============================================================================
 # Chaotic-AUR Repository
 # =============================================================================
-header "Setting Up Chaotic-AUR Repository"
+if checkpoint_reached "chaotic-aur-keys"; then
+    info "Chaotic-AUR repo already configured — skipping"
+else
+    header "Setting Up Chaotic-AUR Repository"
 
-pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
-pacman-key --lsign-key 3056513887B78AEB
-pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+    pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+    pacman-key --lsign-key 3056513887B78AEB
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
 
-echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
+    if ! grep -q "^\[chaotic-aur\]" /etc/pacman.conf; then
+        echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
+    fi
 
-info "Chaotic-AUR repository enabled"
+    info "Chaotic-AUR repository enabled"
+    checkpoint "chaotic-aur-keys"
+fi
 
 # =============================================================================
 # Sync Repos
@@ -104,20 +119,28 @@ info "Chaotic-AUR repository enabled"
 header "Syncing Package Databases"
 
 info "Syncing package databases with CachyOS + Chaotic-AUR repos..."
-# || true: post-transaction hooks (mkinitcpio) may return non-zero on first run;
-# we regenerate initramfs properly after installing the CachyOS kernel below.
-pacman -Syu --noconfirm || true
+# Post-transaction hooks (mkinitcpio) may return non-zero on first run before
+# the CachyOS kernel is installed — we regenerate initramfs properly below.
+set +e
+pacman -Syu --noconfirm
+_syu_rc=$?
+set -e
+if [[ $_syu_rc -ne 0 ]]; then
+    warn "pacman -Syu exited with code $_syu_rc (may be harmless hook failure — continuing)"
+fi
 
 # =============================================================================
 # CachyOS Kernel
 # =============================================================================
 header "Installing CachyOS Kernel"
 
-pacman -S --noconfirm linux-cachyos linux-cachyos-headers
+spinner "Installing CachyOS kernel" pacman -S --noconfirm linux-cachyos linux-cachyos-headers
 
-# Remove stock kernel (installed by pacstrap)
-info "Removing stock linux kernel..."
-pacman -Rns --noconfirm linux || true
+# Remove stock kernel if present (not installed by default, but may exist from manual pacstrap)
+if pacman -Qi linux &>/dev/null; then
+    info "Removing stock linux kernel..."
+    pacman -Rns --noconfirm linux
+fi
 
 info "CachyOS kernel installed"
 
@@ -180,6 +203,8 @@ if [[ "$CPU_TYPE" == "amd" ]]; then
 elif [[ "$CPU_TYPE" == "intel" ]]; then
     pacman -S --noconfirm intel-ucode
     info "Intel microcode installed"
+else
+    warn "No microcode installed (CPU vendor: $CPU_TYPE)"
 fi
 
 # =============================================================================
@@ -194,44 +219,69 @@ info "wheel group can now use sudo"
 # =============================================================================
 # Install Official Packages
 # =============================================================================
-header "Installing Official Packages"
+if checkpoint_reached "packages-installed"; then
+    info "Official packages already installed — skipping"
+else
+    header "Installing Official Packages"
 
-# Read package list (strip comments and blank lines)
-OFFICIAL_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/official.txt" | grep -v '^\s*$' | tr '\n' ' ')
+    # Read package list (strip comments and blank lines)
+    OFFICIAL_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/official.txt" | grep -v '^\s*$' | tr '\n' ' ')
 
-pacman -S --noconfirm --needed $OFFICIAL_PKGS
+    spinner "Installing official packages" pacman -S --noconfirm --needed $OFFICIAL_PKGS
 
-info "Official packages installed"
+    # Install lib32 packages unless SKIP_LIB32=1
+    if [[ "${SKIP_LIB32:-0}" != "1" ]] && [[ -f "$SCRIPT_DIR/packages/lib32.txt" ]]; then
+        LIB32_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/lib32.txt" | grep -v '^\s*$' | tr '\n' ' ')
+        if [[ -n "$LIB32_PKGS" ]]; then
+            spinner "Installing lib32 packages" pacman -S --noconfirm --needed $LIB32_PKGS
+        fi
+    fi
+
+    info "Official packages installed"
+    checkpoint "packages-installed"
+fi
 
 # =============================================================================
 # User Creation (after packages so docker/libvirt groups exist)
 # =============================================================================
-header "Creating User"
+if checkpoint_reached "user-created"; then
+    info "User $USERNAME already exists — skipping creation"
+else
+    header "Creating User"
 
-useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash "$USERNAME"
+    useradd -m -G wheel,docker,video,audio,libvirt,input -s /bin/bash "$USERNAME"
 
-echo "$USERNAME:$USER_PASSWORD" | chpasswd
+    echo "$USERNAME:$USER_PASSWORD" | chpasswd
 
-info "User $USERNAME created with groups: wheel, docker, video, audio, libvirt, input"
+    info "User $USERNAME created with groups: wheel, docker, video, audio, libvirt, input"
+    checkpoint "user-created"
+fi
 
 # =============================================================================
 # GPU Drivers
 # =============================================================================
 header "Installing GPU Drivers"
 
-if [[ "$GPU_TYPE" == "amd" ]]; then
-    # CachyOS mesa-git already provides mesa, vulkan-radeon, and VA-API drivers.
-    # Only install lib32 variants (for Steam/gaming) and corectrl.
-    # Skip mesa/vulkan-radeon — they conflict with CachyOS mesa-git.
-    pacman -S --noconfirm --needed \
-        lib32-mesa lib32-vulkan-radeon \
-        corectrl
-    info "AMD GPU drivers installed (mesa-git from CachyOS already active)"
-elif [[ "$GPU_TYPE" == "nvidia" ]]; then
+if [[ "$GPU_TYPE" == "nvidia" ]]; then
     pacman -S --noconfirm --needed \
         nvidia-dkms nvidia-utils lib32-nvidia-utils \
         nvidia-settings
     info "NVIDIA GPU drivers installed"
+elif [[ "$GPU_TYPE" == "amd" ]]; then
+    # CachyOS mesa-git already provides mesa, vulkan-radeon, and VA-API drivers.
+    # Only install lib32 variants (for Steam/gaming) and corectrl.
+    pacman -S --noconfirm --needed \
+        lib32-mesa lib32-vulkan-radeon \
+        corectrl
+    info "AMD GPU drivers installed (mesa-git from CachyOS already active)"
+elif [[ "$GPU_TYPE" == "intel" ]]; then
+    pacman -S --noconfirm --needed \
+        mesa vulkan-intel lib32-mesa lib32-vulkan-intel
+    info "Intel GPU drivers installed"
+else
+    # VM or unrecognized — basic mesa
+    pacman -S --noconfirm --needed mesa
+    info "Basic mesa drivers installed (no dedicated GPU detected)"
 fi
 
 # =============================================================================
