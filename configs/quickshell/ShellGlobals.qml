@@ -3,6 +3,8 @@ import QtQuick
 
 QtObject {
     property bool doNotDisturb: false
+    property bool gameMode: false
+    property bool recording: false
 
     // Notification history (capped at 50)
     property ListModel notificationHistory: ListModel {}

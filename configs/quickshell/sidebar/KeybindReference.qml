@@ -106,6 +106,8 @@ Flickable {
             KeyRow { keys: "SUPER + D"; action: "Sidebar" }
             KeyRow { keys: "SUPER + V"; action: "Clipboard" }
             KeyRow { keys: "SUPER + SHIFT + S"; action: "Screenshot" }
+            KeyRow { keys: "SUPER + G"; action: "Game Mode" }
+            KeyRow { keys: "SUPER + R"; action: "Record Screen" }
             KeyRow { keys: "SUPER + N"; action: "Cycle Wallpaper" }
             KeyRow { keys: "SUPER + L"; action: "Lock" }
         }

@@ -10,6 +10,7 @@ parsec-bin
 moonlight-qt
 
 # Gaming
+xpadneo-dkms
 lutris
 protonplus
 faugus-launcher

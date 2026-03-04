@@ -89,6 +89,8 @@ curl
 # Gaming
 steam
 gamemode
+linux-headers
+dkms
 lib32-mesa
 lib32-vulkan-radeon
 mangohud
