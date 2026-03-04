@@ -13,6 +13,7 @@ Item {
 
     NotificationServer {
         id: server
+        actionsSupported: true
         bodySupported: true
         bodyMarkupSupported: true
         imageSupported: true
@@ -192,8 +193,18 @@ Item {
                     Connections {
                         target: notif
                         function onClosed() {
-                            root.removeFromGroup(card.appName, card.notifId);
+                            card.dismissing = true;
+                            Qt.callLater(function() {
+                                dismissRemoveTimer.start();
+                            });
                         }
+                    }
+
+                    Timer {
+                        id: dismissRemoveTimer
+                        interval: Theme.animDuration
+                        repeat: false
+                        onTriggered: root.removeFromGroup(card.appName, card.notifId)
                     }
 
                     // Entry/exit animation targets
@@ -213,6 +224,26 @@ Item {
                     // Entry animation
                     Component.onCompleted: {
                         _entered = true;
+                    }
+
+                    // Click notification body to invoke default action
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        z: 0
+                        onClicked: {
+                            if (!notif || !notif.actions) return;
+                            var action = null;
+                            for (var i = 0; i < notif.actions.length; i++) {
+                                var a = notif.actions[i];
+                                if (a.identifier === "default") { action = a; break; }
+                            }
+                            if (!action && notif.actions.length > 0) action = notif.actions[0];
+                            if (action) {
+                                action.invoke();
+                                notif.dismiss();
+                            }
+                        }
                     }
 
                     ColumnLayout {
@@ -341,7 +372,10 @@ Item {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: modelData.invoke()
+                                        onClicked: {
+                                            modelData.invoke();
+                                            if (notif) notif.dismiss();
+                                        }
                                     }
                                 }
                             }
