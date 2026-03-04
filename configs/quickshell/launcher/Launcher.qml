@@ -58,7 +58,11 @@ PanelWindow {
 
         Keys.onPressed: function(event) {
             if (event.key === Qt.Key_Escape) {
-                launcher.hide();
+                if (appGrid.contextMenuVisible) {
+                    appGrid.contextMenuVisible = false;
+                } else {
+                    launcher.hide();
+                }
                 event.accepted = true;
                 return;
             }
@@ -77,7 +81,13 @@ PanelWindow {
             // Close on background click
             MouseArea {
                 anchors.fill: parent
-                onClicked: launcher.hide()
+                onClicked: {
+                    if (appGrid.contextMenuVisible) {
+                        appGrid.contextMenuVisible = false;
+                    } else {
+                        launcher.hide();
+                    }
+                }
             }
 
             // Center content panel

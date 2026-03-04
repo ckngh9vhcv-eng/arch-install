@@ -6,6 +6,7 @@ import "launcher" as Launcher
 import "notifications" as Notifications
 import "powermenu" as PowerMenu
 import "sidebar" as Sidebar
+import "dock" as Dock
 import "clipboard" as Clipboard
 import "screenshot" as Screenshot
 import "osd" as Osd
@@ -123,6 +124,11 @@ ShellRoot {
     // Sidebar dashboard
     Sidebar.Sidebar {
         id: sidebar
+    }
+
+    // Bottom dock
+    Dock.Dock {
+        id: dock
     }
 
     // Volume/Brightness OSD
