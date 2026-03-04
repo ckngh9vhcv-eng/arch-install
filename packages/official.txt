@@ -120,6 +120,6 @@ cifs-utils
 udisks2
 bc
 polkit
-tlp
+power-profiles-daemon
 pavucontrol
 zram-generator

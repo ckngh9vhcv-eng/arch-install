@@ -244,7 +244,7 @@ systemctl enable bluetooth.service
 systemctl enable docker.service
 systemctl enable libvirtd.service
 systemctl enable sshd.service
-systemctl enable tlp.service
+systemctl enable power-profiles-daemon.service
 systemctl enable snapper-timeline.timer
 systemctl enable snapper-cleanup.timer
 systemctl enable tailscaled.service
