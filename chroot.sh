@@ -64,8 +64,11 @@ else
     cd cachyos-repo
 
     info "Running CachyOS repo setup (auto-detects CPU arch)..."
-    # Wrap in if — ERR trap doesn't fire inside if-tests (unlike set +e)
-    if echo "Y" | ./cachyos-repo.sh; then
+    # Use `yes` to feed unlimited "Y" responses — the script has its own prompt
+    # AND internally runs pacman -Syu which also prompts. `echo "Y"` only covers
+    # the first prompt, leaving pacman with EOF on stdin.
+    # Wrap in if — ERR trap doesn't fire inside if-tests.
+    if yes | ./cachyos-repo.sh; then
         _cachyos_rc=0
     else
         _cachyos_rc=$?
