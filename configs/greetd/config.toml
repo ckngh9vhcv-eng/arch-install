@@ -2,5 +2,5 @@
 vt = 1
 
 [default_session]
-command = "tuigreet --time --time-format '%A, %B %d  %H:%M' --remember --remember-session --cmd Hyprland --width 60 --greeting '  ///  ///  ///\n ///  ///  ///\n///  ///  ///\n ///  ///  ///\n  ///  ///  ///\n\n  [ VOID COMMAND ]' --greet-align center --window-padding 2 --container-padding 2 --prompt-padding 1 --asterisks --asterisks-char '/' --theme 'border=yellow;title=yellow;greet=yellow;time=white;text=white;prompt=yellow;input=white;action=darkgray;button=yellow'"
+command = "tuigreet --time --time-format '%A, %B %d  %H:%M' --remember --remember-session --cmd start-hyprland --width 60 --greeting '  ///  ///  ///\n ///  ///  ///\n///  ///  ///\n ///  ///  ///\n  ///  ///  ///\n\n  [ VOID COMMAND ]' --greet-align center --window-padding 2 --container-padding 2 --prompt-padding 1 --asterisks --asterisks-char '/' --theme 'border=yellow;title=yellow;greet=yellow;time=white;text=white;prompt=yellow;input=white;action=darkgray;button=yellow'"
 user = "greeter"
