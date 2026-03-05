@@ -117,8 +117,11 @@ amberol
 mpd
 ncmpcpp
 
-# Scheduler
+# Scheduler & Performance
 scx-scheds
+ananicy-cpp
+cachyos-ananicy-rules
+irqbalance
 
 # System
 cifs-utils
