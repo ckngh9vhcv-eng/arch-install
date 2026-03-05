@@ -72,9 +72,26 @@ Row {
         Behavior on color { ColorAnimation { duration: 150 } }
     }
 
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: root.updateCount > 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
+        onClicked: {
+            if (root.updateCount > 0 && !updateProc.running)
+                updateProc.running = true;
+        }
+    }
+
+    Process {
+        id: updateProc
+        command: ["kitty", "--title", "System Update", "sh", "-c",
+            "echo ':: Updating pacman & AUR packages...' && paru -Syu && echo '' && echo ':: Updating Flatpak packages...' && flatpak update -y; echo '' && echo 'Update complete. Press Enter to close.' && read"]
+        onExited: checkProc.running = true
+    }
+
     Process {
         id: checkProc
-        command: ["sh", "-c", "{ checkupdates 2>/dev/null; paru -Qua 2>/dev/null; }"]
+        command: ["sh", "-c", "{ checkupdates 2>/dev/null; paru -Qua 2>/dev/null; flatpak remote-ls --updates 2>/dev/null; }"]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim();
