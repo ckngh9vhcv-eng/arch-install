@@ -64,11 +64,13 @@ else
     cd cachyos-repo
 
     info "Running CachyOS repo setup (auto-detects CPU arch)..."
-    # Temporarily allow non-zero exit — script may return 1 even on success
-    set +e
-    echo "Y" | ./cachyos-repo.sh
-    _cachyos_rc=$?
-    set -e
+    # Wrap in if — ERR trap doesn't fire inside if-tests (unlike set +e)
+    if echo "Y" | ./cachyos-repo.sh; then
+        _cachyos_rc=0
+    else
+        _cachyos_rc=$?
+        warn "cachyos-repo.sh exited with code $_cachyos_rc (may be normal)"
+    fi
 
     cd /tmp
     rm -rf cachyos-repo cachyos-repo.tar.xz
@@ -121,12 +123,11 @@ header "Syncing Package Databases"
 info "Syncing package databases with CachyOS + Chaotic-AUR repos..."
 # Post-transaction hooks (mkinitcpio) may return non-zero on first run before
 # the CachyOS kernel is installed — we regenerate initramfs properly below.
-set +e
-pacman -Syu --noconfirm
-_syu_rc=$?
-set -e
-if [[ $_syu_rc -ne 0 ]]; then
-    warn "pacman -Syu exited with code $_syu_rc (may be harmless hook failure — continuing)"
+# Wrap in if — ERR trap doesn't fire inside if-tests.
+if pacman -Syu --noconfirm; then
+    :
+else
+    warn "pacman -Syu exited with code $? (may be harmless hook failure — continuing)"
 fi
 
 # =============================================================================
