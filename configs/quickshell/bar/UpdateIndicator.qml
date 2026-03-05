@@ -2,10 +2,13 @@ import QtQuick
 import Quickshell.Io
 import ".."
 
-Row {
+Text {
     id: root
 
-    spacing: 2
+    font.family: Theme.fontFamily
+    font.pixelSize: Theme.fontBody
+    color: updateCount > 0 ? Theme.accent : Theme.textDim
+    text: updateCount > 0 ? "\u{f06b8} " + updateCount : "\u{f06b8}"
 
     property int updateCount: 0
     property string updateList: ""
@@ -13,64 +16,47 @@ Row {
     property bool _checking: false
     property var _buffer: []
 
-    Text {
-        id: iconText
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontBody
-        color: updateCount > 0 ? Theme.accent : Theme.textDim
-        text: "\u{f0ab1}"
+    RotationAnimation on rotation {
+        from: 0
+        to: 360
+        duration: 1500
+        loops: Animation.Infinite
+        running: root._checking
+        onRunningChanged: {
+            if (!running) root.rotation = 0;
+        }
+    }
 
-        RotationAnimation on rotation {
-            from: 0
-            to: 360
+    SequentialAnimation {
+        id: colorPulse
+        loops: Animation.Infinite
+        running: root.updateCount > 0 && !root._checking
+
+        ColorAnimation {
+            target: root
+            property: "color"
+            from: Theme.accent; to: Theme.accentBright
             duration: 1500
-            loops: Animation.Infinite
-            running: root._checking
-            onRunningChanged: {
-                if (!running) iconText.rotation = 0;
-            }
+            easing.type: Easing.InOutSine
+        }
+        ColorAnimation {
+            target: root
+            property: "color"
+            from: Theme.accentBright; to: Theme.accent
+            duration: 1500
+            easing.type: Easing.InOutSine
         }
 
-        SequentialAnimation {
-            id: colorPulse
-            loops: Animation.Infinite
-            running: root.updateCount > 0 && !root._checking
-
-            ColorAnimation {
-                target: iconText
-                property: "color"
-                from: Theme.accent; to: Theme.accentBright
-                duration: 1500
-                easing.type: Easing.InOutSine
-            }
-            ColorAnimation {
-                target: iconText
-                property: "color"
-                from: Theme.accentBright; to: Theme.accent
-                duration: 1500
-                easing.type: Easing.InOutSine
-            }
-
-            onRunningChanged: {
-                if (!running) {
-                    iconText.color = Qt.binding(function() {
-                        return root.updateCount > 0 ? Theme.accent : Theme.textDim;
-                    });
-                }
+        onRunningChanged: {
+            if (!running) {
+                root.color = Qt.binding(function() {
+                    return root.updateCount > 0 ? Theme.accent : Theme.textDim;
+                });
             }
         }
     }
 
-    Text {
-        id: countText
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontBody
-        color: updateCount > 0 ? Theme.accent : Theme.textDim
-        text: updateCount > 0 ? " " + updateCount : ""
-        visible: updateCount > 0
-
-        Behavior on color { ColorAnimation { duration: 150 } }
-    }
+    Behavior on color { ColorAnimation { duration: 150 } }
 
     MouseArea {
         anchors.fill: parent
