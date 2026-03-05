@@ -133,7 +133,13 @@ else
     systemctl --user enable mpd
     systemctl --user enable mpdris2
 
-    info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp)"
+    # Fastfetch
+    backup_config ~/.config/fastfetch
+    mkdir -p ~/.config/fastfetch
+    cp "$SCRIPT_DIR/configs/fastfetch/config.jsonc" ~/.config/fastfetch/config.jsonc
+    cp "$SCRIPT_DIR/configs/fastfetch/logo.txt" ~/.config/fastfetch/logo.txt
+
+    info "Shared configs deployed (kitty, starship, qt6ct, GTK, mpd, ncmpcpp, fastfetch)"
 
     checkpoint "configs-deployed"
 fi
