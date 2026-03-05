@@ -26,6 +26,8 @@ header() { echo -e "\n${PURPLE}${BOLD}=== $* ===${NC}\n"; }
 _err_trap() {
     local exit_code=$?
     local line_no=$1
+    # If errexit (set -e) is disabled, the caller is handling errors — don't abort
+    [[ "$-" =~ e ]] || return 0
     echo -e "${RED}[FATAL]${NC} Command failed at line ${line_no} (exit code ${exit_code})" >&2
     echo -e "${RED}[FATAL]${NC} Script: ${BASH_SOURCE[1]:-unknown}" >&2
     exit "$exit_code"
