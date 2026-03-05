@@ -347,6 +347,10 @@ QtObject {
         path: root.homeDir + "/.config/qt6ct/colors/VoidCommand.conf"
         atomicWrites: true
     }
+    property var fastfetchFileView: FileView {
+        path: root.homeDir + "/.config/fastfetch/config.jsonc"
+        atomicWrites: true
+    }
 
     // --- Processes for live reload ---
     property var kittyReloadProc: Process {
@@ -477,6 +481,7 @@ QtObject {
         kittyFileView.setText(generateKittyConf(s));
         starshipFileView.setText(generateStarshipToml(s));
         qt6ctFileView.setText(generateQt6ctColors(s));
+        fastfetchFileView.setText(generateFastfetchConfig(s));
 
         // Kitty live reload
         kittyReloadProc.running = true;
@@ -1157,5 +1162,68 @@ infobar {\n\
 active_colors=" + active + "\n\
 disabled_colors=" + disabled + "\n\
 inactive_colors=" + active + "\n";
+    }
+
+    function generateFastfetchConfig(s) {
+        function hexToAnsi(hex) {
+            var r = parseInt(hex.substring(1,3), 16);
+            var g = parseInt(hex.substring(3,5), 16);
+            var b = parseInt(hex.substring(5,7), 16);
+            return "38;2;" + r + ";" + g + ";" + b;
+        }
+
+        // Use a placeholder for ESC, then replace after JSON.stringify
+        // to avoid QML/JSON issues with literal control characters
+        var ESC = "%%ESC%%";
+        var accentAnsi = hexToAnsi(s.accent);
+        var sepLine = ESC + "[" + accentAnsi + "m---------------------------------------------";
+        var titleFmt = ESC + "[" + accentAnsi + "m{user-name}" + ESC + "[0m @ " + ESC + "[" + hexToAnsi(s.textDim) + "m{host-name}";
+
+        var config = {
+            "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+            "logo": {
+                "source": "~/.config/fastfetch/logo.txt",
+                "type": "file",
+                "color": {
+                    "1": hexToAnsi(s.surface3),
+                    "2": hexToAnsi(s.accent),
+                    "3": hexToAnsi(s.textDim)
+                },
+                "padding": { "top": 1, "left": 2, "right": 3 }
+            },
+            "display": {
+                "separator": "  ",
+                "color": { "separator": "white" }
+            },
+            "modules": [
+                { "type": "custom", "format": sepLine },
+                { "type": "title", "format": titleFmt },
+                { "type": "custom", "format": sepLine },
+                "break",
+                { "type": "os", "key": "  OS", "keyColor": hexToAnsi(s.ansi.color11) },
+                { "type": "kernel", "key": "  Kernel", "keyColor": hexToAnsi(s.ansi.color11) },
+                { "type": "uptime", "key": "  Uptime", "keyColor": hexToAnsi(s.ansi.color11) },
+                { "type": "packages", "key": "  Packages", "keyColor": hexToAnsi(s.ansi.color11) },
+                "break",
+                { "type": "wm", "key": "  WM", "keyColor": hexToAnsi(s.ansi.color9) },
+                { "type": "theme", "key": "  Theme", "keyColor": hexToAnsi(s.ansi.color9) },
+                { "type": "cursor", "key": "  Cursor", "keyColor": hexToAnsi(s.ansi.color9) },
+                { "type": "terminal", "key": "  Term", "keyColor": hexToAnsi(s.ansi.color9) },
+                { "type": "shell", "key": "  Shell", "keyColor": hexToAnsi(s.ansi.color9) },
+                "break",
+                { "type": "cpu", "key": "  CPU", "keyColor": hexToAnsi(s.ansi.color14) },
+                { "type": "gpu", "key": "  GPU", "keyColor": hexToAnsi(s.ansi.color14) },
+                { "type": "display", "key": "  Display", "keyColor": hexToAnsi(s.ansi.color14) },
+                { "type": "memory", "key": "  Memory", "keyColor": hexToAnsi(s.ansi.color14) },
+                { "type": "disk", "key": "  Disk(/)", "keyColor": hexToAnsi(s.ansi.color14), "folders": "/" },
+                "break",
+                { "type": "localip", "key": "  Network", "keyColor": hexToAnsi(s.ansi.color10) },
+                "break",
+                { "type": "custom", "format": sepLine },
+                { "type": "colors", "paddingLeft": 2, "symbol": "block" }
+            ]
+        };
+
+        return JSON.stringify(config, null, 4).replace(/%%ESC%%/g, "\\u001b");
     }
 }
