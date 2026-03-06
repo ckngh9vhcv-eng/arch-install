@@ -305,9 +305,12 @@ elif [[ "$GPU_TYPE" == "intel" ]]; then
     done
     info "Intel GPU drivers installed"
 else
-    # VM or unrecognized — basic mesa
-    pacman -S --noconfirm --needed mesa
-    info "Basic mesa drivers installed (no dedicated GPU detected)"
+    # VM or unrecognized — basic mesa (skip if mesa-git from CachyOS present)
+    if pacman -S --noconfirm --needed mesa 2>/dev/null; then
+        info "Basic mesa drivers installed (no dedicated GPU detected)"
+    else
+        info "Skipping mesa (mesa-git already installed from CachyOS)"
+    fi
 fi
 
 # =============================================================================
