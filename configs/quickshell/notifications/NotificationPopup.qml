@@ -138,30 +138,37 @@ Item {
         id: notifModel
     }
 
-    // Notification cards positioned top-right
-    PanelWindow {
-        anchors.top: true
-        anchors.right: true
-        implicitWidth: notifModel.count > 0 ? 380 : 0
-        implicitHeight: notifModel.count > 0 ? notifColumn.implicitHeight + 20 : 0
-        visible: notifModel.count > 0
-        color: "transparent"
-        focusable: false
-        aboveWindows: true
+    // Notification cards positioned top-right — Loader destroys the layer surface
+    // when empty so it doesn't steal clicks from windows underneath
+    Loader {
+        active: notifModel.count > 0
+        sourceComponent: notifPanelComponent
+    }
 
-        margins.top: 46
-        margins.right: 10
+    Component {
+        id: notifPanelComponent
+        PanelWindow {
+            anchors.top: true
+            anchors.right: true
+            implicitWidth: 380
+            implicitHeight: notifColumn.implicitHeight + 20
+            color: "transparent"
+            focusable: false
+            aboveWindows: true
 
-        Column {
-            id: notifColumn
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.left: parent.left
-            anchors.margins: 10
-            spacing: 8
+            margins.top: 46
+            margins.right: 10
 
-            Repeater {
-                model: notifModel
+            Column {
+                id: notifColumn
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.left: parent.left
+                anchors.margins: 10
+                spacing: 8
+
+                Repeater {
+                    model: notifModel
 
                 Rectangle {
                     id: card
@@ -384,5 +391,6 @@ Item {
                 }
             }
         }
+    }
     }
 }
