@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Upgrade
+Operation = Install
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Generating snapshot boot entries...
+When = PostTransaction
+Exec = /usr/local/bin/snapshot-boot-entries

@@ -188,6 +188,7 @@ fi
 
 cat > /boot/loader/entries/arch.conf <<EOF
 title   Arch Linux (CachyOS)
+sort-key 0-main
 linux   /vmlinuz-linux-cachyos
 ${UCODE_INITRD}
 initrd  /initramfs-linux-cachyos.img
@@ -415,6 +416,12 @@ else
 fi
 
 info "Snapper root config created (manual — D-Bus unavailable in chroot)"
+
+# Snapshot boot entry generator
+install -Dm755 "$SCRIPT_DIR/configs/snapshot-boot/snapshot-boot-entries.sh" /usr/local/bin/snapshot-boot-entries
+install -Dm644 "$SCRIPT_DIR/configs/snapshot-boot/zz-snapshot-boot.hook" /etc/pacman.d/hooks/zz-snapshot-boot.hook
+
+info "Snapshot boot entry generator installed"
 
 # =============================================================================
 # User Setup (runs as $USERNAME inside chroot)
