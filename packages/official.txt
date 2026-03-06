@@ -26,6 +26,7 @@ hyprland
 xdg-desktop-portal-hyprland
 
 # Hyprland utilities
+xorg-xhost
 pacman-contrib
 hyprpaper
 hyprlock
@@ -68,6 +69,7 @@ breeze-gtk
 adw-gtk-theme
 
 # CLI Tools
+nano
 fastfetch
 ripgrep
 fd

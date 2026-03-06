@@ -18,6 +18,8 @@ ColumnLayout {
         id: availableModel
     }
 
+    property var _pendingPaired: []
+
     // Poll paired devices
     Process {
         id: pairedProc
@@ -26,24 +28,45 @@ ColumnLayout {
             onRead: data => {
                 var line = data.trim();
                 if (line.length === 0) return;
-                // Format: "Device XX:XX:XX:XX:XX:XX Name"
                 var match = line.match(/^Device\s+([0-9A-F:]+)\s+(.+)$/i);
                 if (!match) return;
-                pairedModel.append({
-                    mac: match[1],
-                    name: match[2],
-                    connected: false,
-                    paired: true
-                });
+                root._pendingPaired.push({ mac: match[1], name: match[2] });
             }
         }
         onRunningChanged: {
-            if (running) pairedModel.clear();
+            if (running) root._pendingPaired = [];
         }
         onExited: {
+            var pending = root._pendingPaired;
+            var pendingMacs = pending.map(function(d) { return d.mac; });
+
+            // Remove devices no longer paired
+            for (var i = pairedModel.count - 1; i >= 0; i--) {
+                if (pendingMacs.indexOf(pairedModel.get(i).mac) === -1)
+                    pairedModel.remove(i);
+            }
+            // Add/update devices
+            for (var j = 0; j < pending.length; j++) {
+                var found = false;
+                for (var k = 0; k < pairedModel.count; k++) {
+                    if (pairedModel.get(k).mac === pending[j].mac) {
+                        pairedModel.setProperty(k, "name", pending[j].name);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    pairedModel.append({
+                        mac: pending[j].mac,
+                        name: pending[j].name,
+                        connected: false,
+                        paired: true
+                    });
+                }
+            }
             // Check connection status for each device
-            for (var i = 0; i < pairedModel.count; i++) {
-                checkConnectionStatus(pairedModel.get(i).mac, i);
+            for (var ci = 0; ci < pairedModel.count; ci++) {
+                checkConnectionStatus(pairedModel.get(ci).mac, ci);
             }
         }
     }
@@ -76,32 +99,69 @@ ColumnLayout {
         onTriggered: pairedProc.running = true
     }
 
-    // Scan: run bluetoothctl scan for 10s in background, then list discovered devices
+    // Scan: bluetoothctl must stay interactive for discovery to work.
+    // Send scan on, wait, then diff all devices vs paired to find available ones.
     Process {
         id: scanProc
-        command: ["sh", "-c", "timeout 10 bluetoothctl scan on > /dev/null 2>&1; bluetoothctl scan off > /dev/null 2>&1"]
-        onExited: {
-            root.scanning = false;
-            availableScanProc.running = true;
-        }
-    }
-
-    // List discovered devices, filtering out already-paired ones
-    Process {
-        id: availableScanProc
-        command: ["sh", "-c", "comm -23 <(bluetoothctl devices | sort) <(bluetoothctl devices Paired | sort)"]
+        command: ["python3", "-c", `
+import subprocess, time, re
+ansi = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]|\x1b\[[0-9;]*[PK]')
+proc = subprocess.Popen(['bluetoothctl'], stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+proc.stdin.write(b'scan on\n')
+proc.stdin.flush()
+time.sleep(8)
+proc.stdin.write(b'devices\n')
+proc.stdin.flush()
+time.sleep(0.5)
+proc.stdin.write(b'devices Paired\n')
+proc.stdin.flush()
+time.sleep(0.5)
+proc.stdin.write(b'scan off\n')
+proc.stdin.flush()
+proc.stdin.write(b'quit\n')
+proc.stdin.flush()
+out, _ = proc.communicate(timeout=5)
+raw = ansi.sub('', out.decode(errors='replace'))
+lines = raw.split('\n')
+all_devs = {}
+paired_macs = set()
+section = None
+for line in lines:
+    stripped = line.strip()
+    if stripped.endswith('> devices') or stripped == 'devices':
+        section = 'all'
+        continue
+    if stripped.endswith('> devices Paired') or stripped == 'devices Paired':
+        section = 'paired'
+        continue
+    m = re.match(r'^Device\s+([0-9A-F:]{17})\s+(.+)', stripped, re.I)
+    if section and m:
+        mac, name = m.group(1), m.group(2)
+        if section == 'all':
+            all_devs[mac] = name
+        elif section == 'paired':
+            paired_macs.add(mac)
+for mac, name in all_devs.items():
+    if mac not in paired_macs:
+        print(f'AVAILABLE|{mac}|{name}')
+`]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim();
-                if (line.length === 0) return;
-                var match = line.match(/^Device\s+([0-9A-F:]+)\s+(.+)$/i);
-                if (!match) return;
-                for (var i = 0; i < availableModel.count; i++) {
-                    if (availableModel.get(i).mac === match[1]) return;
+                if (!line.startsWith("AVAILABLE|")) return;
+                var parts = line.split("|");
+                if (parts.length < 3) return;
+                var mac = parts[1];
+                var name = parts.slice(2).join("|");
+                if (name.length === 0) name = mac;
+                // Skip duplicates
+                for (var j = 0; j < availableModel.count; j++) {
+                    if (availableModel.get(j).mac === mac) return;
                 }
                 availableModel.append({
-                    mac: match[1],
-                    name: match[2],
+                    mac: mac,
+                    name: name,
                     connected: false,
                     paired: false
                 });
@@ -109,6 +169,9 @@ ColumnLayout {
         }
         onRunningChanged: {
             if (running) availableModel.clear();
+        }
+        onExited: {
+            root.scanning = false;
         }
     }
 
