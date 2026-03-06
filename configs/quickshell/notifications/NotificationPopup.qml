@@ -142,8 +142,8 @@ Item {
     PanelWindow {
         anchors.top: true
         anchors.right: true
-        implicitWidth: 380
-        implicitHeight: notifColumn.implicitHeight + 20
+        implicitWidth: notifModel.count > 0 ? 380 : 0
+        implicitHeight: notifModel.count > 0 ? notifColumn.implicitHeight + 20 : 0
         visible: notifModel.count > 0
         color: "transparent"
         focusable: false
