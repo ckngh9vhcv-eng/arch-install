@@ -105,13 +105,21 @@ else
     cp "$SCRIPT_DIR/configs/gtk-4.0/settings.ini" ~/.config/gtk-4.0/settings.ini
     cp "$SCRIPT_DIR/configs/gtk-4.0/gtk.css" ~/.config/gtk-4.0/gtk.css
 
-    # gsettings overrides (some GTK apps read these instead of settings.ini)
-    gsettings set org.gnome.desktop.interface gtk-theme 'Layan-Dark'
-    gsettings set org.gnome.desktop.interface icon-theme 'Tela-circle-dark'
-    gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'
-    gsettings set org.gnome.desktop.interface cursor-size 24
-    gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
-    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+    # gsettings overrides — write dconf database directly (gsettings needs D-Bus, unavailable in chroot)
+    mkdir -p ~/.config/dconf
+    cat > /tmp/dconf-settings.ini <<DCONF
+[org/gnome/desktop/interface]
+gtk-theme='Layan-Dark'
+icon-theme='Tela-circle-dark'
+cursor-theme='Bibata-Modern-Classic'
+cursor-size=24
+font-name='Noto Sans 10'
+color-scheme='prefer-dark'
+DCONF
+    dconf load / < /tmp/dconf-settings.ini 2>/dev/null || \
+        DCONF_PROFILE=user dbus-run-session dconf load / < /tmp/dconf-settings.ini 2>/dev/null || \
+        warn "dconf write skipped (no D-Bus) — gsettings will apply on first login"
+    rm -f /tmp/dconf-settings.ini
 
     # Replace __HOME__ placeholder in configs that need absolute paths
     sed -i "s|__HOME__|$HOME|g" ~/.config/qt6ct/qt6ct.conf
@@ -130,8 +138,10 @@ else
     cp "$SCRIPT_DIR/configs/ncmpcpp/config" ~/.config/ncmpcpp/config
 
     # Enable mpd and mpdris2 as systemd user services
-    systemctl --user enable mpd
-    systemctl --user enable mpdris2
+    # systemctl --user doesn't work in chroot (no D-Bus session), so create symlinks manually
+    mkdir -p ~/.config/systemd/user/default.target.wants
+    ln -sf /usr/lib/systemd/user/mpd.service ~/.config/systemd/user/default.target.wants/mpd.service
+    ln -sf /usr/lib/systemd/user/mpdris2.service ~/.config/systemd/user/default.target.wants/mpdris2.service
 
     # Fastfetch
     backup_config ~/.config/fastfetch
