@@ -251,6 +251,12 @@ else
         fi
     fi
 
+    # Disable snap-pac hooks during install — snapper in a chroot is pointless
+    # and produces "fatal library error" noise on every pacman transaction.
+    for hook in /usr/share/libalpm/hooks/snap-pac-*.hook; do
+        [[ -f "$hook" ]] && mv "$hook" "${hook}.disabled"
+    done
+
     info "Official packages installed"
     checkpoint "packages-installed"
 fi
@@ -473,6 +479,11 @@ info "User setup complete"
 header "Cleaning Up"
 
 rm -f /root/hw-detect
+
+# Re-enable snap-pac hooks for normal operation after first boot
+for hook in /usr/share/libalpm/hooks/snap-pac-*.hook.disabled; do
+    [[ -f "$hook" ]] && mv "$hook" "${hook%.disabled}"
+done
 
 info "Sensitive data cleaned up"
 
