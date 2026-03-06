@@ -22,19 +22,11 @@ PanelWindow {
     property string activePopup: ""
 
     function togglePopup(name) {
-        if (activePopup === name) {
-            activePopup = "";
-        } else {
-            activePopup = name;
-        }
-        mediaPopup.showing = (activePopup === "media");
-        calendarPopup.showing = (activePopup === "calendar");
+        activePopup = (activePopup === name) ? "" : name;
     }
 
     function closePopups() {
         activePopup = "";
-        mediaPopup.showing = false;
-        calendarPopup.showing = false;
     }
 
     // Tooltip state
@@ -78,31 +70,45 @@ PanelWindow {
         }
     }
 
-    // Click-outside backdrop for popups
-    PanelWindow {
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
-        visible: bar.activePopup !== ""
-        focusable: false
-        aboveWindows: true
-        color: "transparent"
+    // Click-outside backdrop for popups (Loader destroys layer surface when inactive)
+    Loader {
+        active: bar.activePopup !== ""
+        sourceComponent: Component {
+            PanelWindow {
+                anchors.top: true
+                anchors.bottom: true
+                anchors.left: true
+                anchors.right: true
+                focusable: false
+                aboveWindows: true
+                color: "transparent"
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: bar.closePopups()
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: bar.closePopups()
+                }
+            }
         }
     }
 
-    MediaPopup {
-        id: mediaPopup
-        targetX: mediaPlayer.x + 12
+    Loader {
+        active: bar.activePopup === "media"
+        sourceComponent: Component {
+            MediaPopup {
+                showing: true
+                targetX: mediaPlayer.x + 12
+            }
+        }
     }
 
-    CalendarPopup {
-        id: calendarPopup
-        targetX: clock.x + clock.width / 2 + 12
+    Loader {
+        active: bar.activePopup === "calendar"
+        sourceComponent: Component {
+            CalendarPopup {
+                showing: true
+                targetX: clock.x + clock.width / 2 + 12
+            }
+        }
     }
 
     // Blurred background
