@@ -114,6 +114,7 @@ obs-studio
 thunar
 flatpak
 amberol
+celluloid
 mpd
 ncmpcpp
 
