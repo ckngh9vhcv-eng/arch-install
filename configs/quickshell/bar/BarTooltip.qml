@@ -13,7 +13,6 @@ PanelWindow {
     anchors.left: true
     implicitWidth: tipLabel.implicitWidth + 20
     implicitHeight: tipLabel.implicitHeight + 12
-    visible: text.length > 0 || tipFadeAnim.running
 
     margins.top: 40
     margins.left: Math.max(4, tipX - implicitWidth / 2)
@@ -28,11 +27,6 @@ PanelWindow {
         color: Qt.rgba(Theme.surface1.r, Theme.surface1.g, Theme.surface1.b, 0.95)
         border.width: 1
         border.color: Theme.accentDim
-
-        opacity: tooltip.text.length > 0 ? 1.0 : 0.0
-        Behavior on opacity {
-            NumberAnimation { id: tipFadeAnim; duration: 150; easing.type: Easing.OutCubic }
-        }
 
         Text {
             id: tipLabel
