@@ -238,7 +238,18 @@ else
     if [[ "${SKIP_LIB32:-0}" != "1" ]] && [[ -f "$SCRIPT_DIR/packages/lib32.txt" ]]; then
         LIB32_PKGS=$(grep -v '^\s*#' "$SCRIPT_DIR/packages/lib32.txt" | grep -v '^\s*$' | tr '\n' ' ')
         if [[ -n "$LIB32_PKGS" ]]; then
-            spinner "Installing lib32 packages" pacman -S --noconfirm --needed $LIB32_PKGS
+            # Filter out packages where a -git variant is already installed (CachyOS)
+            FILTERED_PKGS=""
+            for pkg in $LIB32_PKGS; do
+                if pacman -Qq "${pkg}-git" &>/dev/null; then
+                    info "Skipping $pkg (${pkg}-git already installed from CachyOS)"
+                else
+                    FILTERED_PKGS+="$pkg "
+                fi
+            done
+            if [[ -n "$FILTERED_PKGS" ]]; then
+                spinner "Installing lib32 packages" pacman -S --noconfirm --needed $FILTERED_PKGS
+            fi
         fi
     fi
 
@@ -275,13 +286,17 @@ if [[ "$GPU_TYPE" == "nvidia" ]]; then
 elif [[ "$GPU_TYPE" == "amd" ]]; then
     # CachyOS mesa-git already provides mesa, vulkan-radeon, and VA-API drivers.
     # Only install lib32 variants (for Steam/gaming) and corectrl.
-    pacman -S --noconfirm --needed \
-        lib32-mesa lib32-vulkan-radeon \
-        corectrl
+    AMD_PKGS="corectrl"
+    pacman -Qq lib32-mesa-git &>/dev/null || AMD_PKGS+=" lib32-mesa"
+    pacman -Qq lib32-vulkan-radeon-git &>/dev/null || AMD_PKGS+=" lib32-vulkan-radeon"
+    pacman -S --noconfirm --needed $AMD_PKGS
     info "AMD GPU drivers installed (mesa-git from CachyOS already active)"
 elif [[ "$GPU_TYPE" == "intel" ]]; then
-    pacman -S --noconfirm --needed \
-        mesa vulkan-intel lib32-mesa lib32-vulkan-intel
+    INTEL_PKGS="vulkan-intel"
+    pacman -Qq mesa-git &>/dev/null || INTEL_PKGS+=" mesa"
+    pacman -Qq lib32-mesa-git &>/dev/null || INTEL_PKGS+=" lib32-mesa"
+    pacman -Qq lib32-vulkan-intel-git &>/dev/null || INTEL_PKGS+=" lib32-vulkan-intel"
+    pacman -S --noconfirm --needed $INTEL_PKGS
     info "Intel GPU drivers installed"
 else
     # VM or unrecognized — basic mesa
