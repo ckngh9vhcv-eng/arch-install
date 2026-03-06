@@ -48,11 +48,12 @@ PanelWindow {
         repeat: false
         onTriggered: {
             if (bar.tooltipHovered) {
-                barTooltip.text = bar.tooltipText;
-                barTooltip.tipX = bar.tooltipX;
+                bar.tooltipVisible = true;
             }
         }
     }
+
+    property bool tooltipVisible: false
 
     function showTooltip(text, globalX) {
         tooltipText = text;
@@ -64,11 +65,17 @@ PanelWindow {
     function hideTooltip() {
         tooltipHovered = false;
         tooltipDelay.stop();
-        barTooltip.text = "";
+        tooltipVisible = false;
     }
 
-    BarTooltip {
-        id: barTooltip
+    Loader {
+        active: bar.tooltipVisible
+        sourceComponent: Component {
+            BarTooltip {
+                text: bar.tooltipText
+                tipX: bar.tooltipX
+            }
+        }
     }
 
     // Click-outside backdrop for popups
