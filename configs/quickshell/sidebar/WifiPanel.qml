@@ -13,6 +13,8 @@ ColumnLayout {
         id: networkModel
     }
 
+    property var _pendingNetworks: []
+
     // Poll available networks
     Process {
         id: wifiScanProc
@@ -21,16 +23,15 @@ ColumnLayout {
             onRead: data => {
                 var line = data.trim();
                 if (line.length === 0) return;
-                // nmcli -t uses : as separator
                 var parts = line.split(":");
                 if (parts.length < 4) return;
                 var ssid = parts[0];
                 if (ssid.length === 0) return;
-                // Deduplicate — skip if already in model
-                for (var i = 0; i < networkModel.count; i++) {
-                    if (networkModel.get(i).ssid === ssid) return;
+                // Deduplicate in pending list
+                for (var i = 0; i < root._pendingNetworks.length; i++) {
+                    if (root._pendingNetworks[i].ssid === ssid) return;
                 }
-                networkModel.append({
+                root._pendingNetworks.push({
                     ssid: ssid,
                     signal: parseInt(parts[1]) || 0,
                     security: parts[2] || "",
@@ -39,7 +40,33 @@ ColumnLayout {
             }
         }
         onRunningChanged: {
-            if (running) networkModel.clear();
+            if (running) root._pendingNetworks = [];
+        }
+        onExited: {
+            var pending = root._pendingNetworks;
+            var pendingSsids = pending.map(function(n) { return n.ssid; });
+
+            // Remove networks no longer visible
+            for (var i = networkModel.count - 1; i >= 0; i--) {
+                if (pendingSsids.indexOf(networkModel.get(i).ssid) === -1)
+                    networkModel.remove(i);
+            }
+            // Add/update networks
+            for (var j = 0; j < pending.length; j++) {
+                var found = false;
+                for (var k = 0; k < networkModel.count; k++) {
+                    if (networkModel.get(k).ssid === pending[j].ssid) {
+                        networkModel.setProperty(k, "signal", pending[j].signal);
+                        networkModel.setProperty(k, "security", pending[j].security);
+                        networkModel.setProperty(k, "connected", pending[j].connected);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    networkModel.append(pending[j]);
+                }
+            }
         }
     }
 
