@@ -128,7 +128,12 @@ Item {
             running: true
             repeat: false
             onTriggered: {
+                var nid = notifToExpire ? notifToExpire.id : -1;
                 if (notifToExpire) notifToExpire.expire();
+                // Fallback: remove from model directly in case onClosed doesn't fire
+                if (nid >= 0 && notifApp.length > 0) {
+                    root.removeFromGroup(notifApp, nid);
+                }
                 destroy();
             }
         }
