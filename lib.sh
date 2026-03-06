@@ -46,8 +46,8 @@ run_or_die() {
 
 # --- Checkpoint system for re-runnability ---
 CHECKPOINT_DIR="/tmp/void-command-checkpoints"
-mkdir -p "$CHECKPOINT_DIR"
-chmod 1777 "$CHECKPOINT_DIR"
+mkdir -p "$CHECKPOINT_DIR" 2>/dev/null || true
+chmod 1777 "$CHECKPOINT_DIR" 2>/dev/null || true
 
 checkpoint() {
     touch "${CHECKPOINT_DIR}/$1"
