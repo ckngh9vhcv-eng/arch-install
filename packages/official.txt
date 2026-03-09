@@ -46,7 +46,7 @@ greetd
 
 # Qt (for Quickshell + Welcome App)
 qt6-svg
-qt6-quickcontrols2
+qt6-declarative
 cmake
 
 # Terminal & Shell
