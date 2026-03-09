@@ -1,19 +1,19 @@
 # Arch Linux Install Script
 
-Automated Arch Linux installer that replicates a NixOS Hyprland + Quickshell "Void Command" workstation.
+Automated Arch Linux installer with a custom Hyprland + Quickshell "Void Command" desktop.
 
 ## What You Get
 
 - **CachyOS kernel** (optimized, Clang + ThinLTO, EEVDF scheduler)
 - **BTRFS** with subvolumes (@, @home, @pkg, @log, @snapshots) + Snapper
 - **systemd-boot** bootloader
-- **Hyprland** tiling WM with Void Command purple theme (#8B6FC0)
+- **Hyprland** tiling WM with Void Command theme (8 color schemes)
 - **Quickshell** unified desktop shell (bar, launcher, notifications, power menu, sidebar, clipboard, screenshot)
 - **greetd + tuigreet** login manager
-- **Zram** swap (25% RAM, zstd)
-- Steam, Wine, emulators, and full gaming stack
-- Docker, QEMU/KVM, Tailscale
+- **Welcome App** for post-install setup — app catalog, common fixes, service toggles
 - **GPU auto-detection**: AMD and NVIDIA drivers installed based on detected hardware
+- **Zram** swap (25% RAM, zstd)
+- Performance tuning: BBR, sched-ext, NVMe optimizations
 
 ## Usage
 
@@ -37,20 +37,17 @@ cd arch-install
 umount -R /mnt && reboot
 ```
 
-### After Reboot — Manual Steps
+### After Reboot
+
+The **Void Command Welcome App** launches automatically on first login. Use it to:
+- Install apps (browsers, gaming, emulators, dev tools, media players)
+- Apply common fixes (NVIDIA flickering, bluetooth, audio, pacman keyring)
+- Enable optional services (Docker, SSH, Tailscale, libvirtd, bluetooth)
 
 ```bash
 # GitHub CLI auth
 gh auth login
 gh auth setup-git
-
-# Tailscale VPN
-sudo tailscale up
-
-# Libvirt storage pool
-virsh pool-define-as default dir - - - - /var/lib/libvirt/images
-virsh pool-start default
-virsh pool-autostart default
 ```
 
 ## Project Structure
@@ -62,19 +59,20 @@ arch-install/
 ├── user-setup.sh       # Phase 3: User config (runs as $USER in chroot via su -l)
 ├── packages/
 │   ├── base.txt        # Pacstrap packages
-│   ├── official.txt    # Pacman packages
-│   └── aur.txt         # AUR packages (installed via paru)
+│   ├── official.txt    # Pacman packages (core system + desktop)
+│   └── aur.txt         # AUR packages (desktop shell + theming)
 ├── configs/
 │   ├── hyprland/       # Hyprland WM + hyprpaper + hyprlock configs
 │   ├── quickshell/     # Quickshell QML desktop shell (bar, launcher, notifications, etc.)
 │   ├── greetd/         # Login manager config (tuigreet → Hyprland)
-│   ├── kitty/          # Terminal config (Void Command color scheme)
+│   ├── kitty/          # Terminal config
 │   ├── starship/       # Shell prompt config
-│   ├── qt6ct/          # Qt6 theming (Breeze Dark Purple)
-│   ├── gtk-3.0/        # GTK3 theme (Layan-Dark + custom dark overrides)
+│   ├── qt6ct/          # Qt6 theming
+│   ├── gtk-3.0/        # GTK3 theme
 │   ├── gtk-4.0/        # GTK4 theme settings
 │   └── bash/           # Shell aliases and integrations
-├── wallpapers/         # Desktop wallpaper
+├── welcome-app/        # Qt6/QML post-install welcome app (C++ backend)
+├── wallpapers/         # Desktop wallpapers
 └── README.md
 ```
 
@@ -87,7 +85,3 @@ arch-install/
 # - RAM: 4GB+
 # Boot the Arch ISO and run ./install.sh
 ```
-
-## Source
-
-Ported from a NixOS Hyprland configuration.

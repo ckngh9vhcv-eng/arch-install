@@ -337,12 +337,13 @@ header "User Setup Complete!"
 
 echo -e "${GREEN}${BOLD}Your Arch Linux workstation is ready.${NC}"
 echo ""
+echo "The Void Command Welcome App will launch on first login to help you"
+echo "install apps, enable services, and apply common fixes."
+echo ""
 echo "Remaining manual steps after reboot:"
 echo "  1. GitHub authentication:  gh auth login -p ssh"
-echo "  2. Tailscale:              sudo tailscale up"
-echo "  3. Libvirt default pool:   virsh pool-define-as default dir - - - - /var/lib/libvirt/images && virsh pool-start default && virsh pool-autostart default"
 if [[ -z "${SSH_RESTORE_SOURCE:-}" ]]; then
-    echo "  4. Restore SSH keys:       scp -r user@host:/path/to/ssh-backup/ ~/.ssh/ && chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_*"
+    echo "  2. Restore SSH keys:       scp -r user@host:/path/to/ssh-backup/ ~/.ssh/ && chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_*"
 fi
 echo ""
 echo "Login: greetd (tuigreet) → Hyprland + Quickshell (Void Command theme)"

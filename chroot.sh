@@ -325,19 +325,15 @@ fi
 header "Enabling Services"
 
 systemctl enable NetworkManager.service
-systemctl enable bluetooth.service
-systemctl enable docker.service
-systemctl enable libvirtd.service
-systemctl enable sshd.service
 systemctl enable power-profiles-daemon.service
 systemctl enable snapper-timeline.timer
 systemctl enable snapper-cleanup.timer
-systemctl enable tailscaled.service
-systemctl enable scx_loader.service
-systemctl enable ananicy-cpp.service
 systemctl enable irqbalance.service
 
-info "System services enabled"
+# Optional services (bluetooth, docker, libvirtd, sshd, tailscale, scx_loader,
+# ananicy) are available via the Welcome App's Tweaks page after first boot.
+
+info "Core system services enabled"
 
 # =============================================================================
 # Login Manager (greetd)

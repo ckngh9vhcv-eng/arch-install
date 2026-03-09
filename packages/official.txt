@@ -91,20 +91,15 @@ git
 wget
 curl
 
-# Gaming
-steam
+# Gaming (core libraries — apps installed via Welcome App)
 gamemode
-retroarch
-moonlight-qt
-lutris
-scummvm
 linux-headers
 dkms
 mangohud
 wine-staging
 winetricks
 
-# Containers & VMs
+# Containers & VMs (packages only — services enabled via Welcome App)
 docker
 docker-compose
 qemu-full
@@ -113,12 +108,8 @@ virt-manager
 dnsmasq
 swtpm
 
-# Media & Apps
-obs-studio
-thunar
+# Media (core — apps installed via Welcome App)
 flatpak
-amberol
-celluloid
 mpd
 ncmpcpp
 
