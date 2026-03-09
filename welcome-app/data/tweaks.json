@@ -1,0 +1,94 @@
+{
+  "tweaks": [
+    {
+      "id": "bluetooth",
+      "name": "Bluetooth Service",
+      "description": "Enable Bluetooth hardware and pairing",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet bluetooth.service",
+      "enableCommands": ["sudo systemctl enable --now bluetooth.service"],
+      "disableCommands": ["sudo systemctl disable --now bluetooth.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "sshd",
+      "name": "SSH Server",
+      "description": "Allow remote SSH connections to this machine",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet sshd.service",
+      "enableCommands": ["sudo systemctl enable --now sshd.service"],
+      "disableCommands": ["sudo systemctl disable --now sshd.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "tailscale",
+      "name": "Tailscale VPN",
+      "description": "Mesh VPN for secure networking between your devices",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet tailscaled.service",
+      "enableCommands": ["sudo systemctl enable --now tailscaled.service"],
+      "disableCommands": ["sudo systemctl disable --now tailscaled.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "zram",
+      "name": "Zram Swap",
+      "description": "Compressed RAM-based swap for better memory management",
+      "type": "toggle",
+      "checkCommand": "test -e /dev/zram0",
+      "enableCommands": ["sudo systemctl enable --now systemd-zram-setup@zram0.service"],
+      "disableCommands": ["sudo systemctl disable --now systemd-zram-setup@zram0.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "docker",
+      "name": "Docker Service",
+      "description": "Container runtime daemon",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet docker.service",
+      "enableCommands": ["sudo systemctl enable --now docker.service"],
+      "disableCommands": ["sudo systemctl disable --now docker.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "libvirtd",
+      "name": "Libvirt (Virtual Machines)",
+      "description": "QEMU/KVM virtual machine management daemon",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet libvirtd.service",
+      "enableCommands": ["sudo systemctl enable --now libvirtd.service"],
+      "disableCommands": ["sudo systemctl disable --now libvirtd.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "power-profile",
+      "name": "Power Profile",
+      "description": "CPU power management profile",
+      "type": "select",
+      "options": ["power-saver", "balanced", "performance"],
+      "checkCommand": "powerprofilesctl get 2>/dev/null || echo 'balanced'",
+      "selectCommand": "powerprofilesctl set %OPTION%",
+      "requiresRoot": false
+    },
+    {
+      "id": "scx-scheduler",
+      "name": "sched-ext Scheduler",
+      "description": "CachyOS BPF-based CPU scheduler for improved responsiveness",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet scx.service",
+      "enableCommands": ["sudo systemctl enable --now scx.service"],
+      "disableCommands": ["sudo systemctl disable --now scx.service"],
+      "requiresRoot": true
+    },
+    {
+      "id": "ananicy",
+      "name": "Ananicy (Auto Nice)",
+      "description": "Automatic process priority management for better desktop responsiveness",
+      "type": "toggle",
+      "checkCommand": "systemctl is-active --quiet ananicy-cpp.service",
+      "enableCommands": ["sudo systemctl enable --now ananicy-cpp.service"],
+      "disableCommands": ["sudo systemctl disable --now ananicy-cpp.service"],
+      "requiresRoot": true
+    }
+  ]
+}

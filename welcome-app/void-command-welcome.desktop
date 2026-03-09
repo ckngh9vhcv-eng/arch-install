@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Void Command Welcome
+Comment=Welcome app for Void Command desktop
+Exec=void-command-welcome
+Icon=preferences-system
+Type=Application
+Categories=System;
+StartupWMClass=void-command-welcome

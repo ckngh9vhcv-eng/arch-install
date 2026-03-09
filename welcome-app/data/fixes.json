@@ -1,0 +1,121 @@
+{
+  "fixes": [
+    {
+      "id": "lib32-mesa-conflicts",
+      "name": "CachyOS lib32-mesa-git Conflicts",
+      "description": "CachyOS ships lib32-mesa-git which conflicts with standard lib32-mesa and lib32-vulkan-radeon. This can cause package operation failures.",
+      "severity": "medium",
+      "detectCommand": "pacman -Qq lib32-mesa-git 2>/dev/null && ! pacman -Qq lib32-mesa 2>/dev/null",
+      "fixCommands": [
+        "echo 'Installing individual lib32 packages (skipping conflicts with CachyOS optimized versions)...'",
+        "sudo pacman -S --noconfirm --needed lib32-mesa 2>/dev/null || echo 'Skipped lib32-mesa (CachyOS version installed)'",
+        "sudo pacman -S --noconfirm --needed lib32-vulkan-radeon 2>/dev/null || echo 'Skipped lib32-vulkan-radeon (CachyOS version installed)'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "wayland-root-gui",
+      "name": "Root GUI Apps on Wayland",
+      "description": "GUI applications like GParted cannot run as root under Wayland without xhost permissions. Installs xorg-xhost if missing.",
+      "severity": "low",
+      "detectCommand": "! command -v xhost >/dev/null 2>&1",
+      "fixCommands": [
+        "sudo pacman -S --noconfirm --needed xorg-xhost",
+        "echo 'Installed. Run: xhost +SI:localuser:root before launching root GUI apps.'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "nvidia-wayland-flicker",
+      "name": "NVIDIA Wayland Flickering",
+      "description": "NVIDIA GPUs may flicker on Wayland without proper environment variables in Hyprland config.",
+      "severity": "high",
+      "detectCommand": "lspci | grep -qi nvidia && ! grep -q 'GBM_BACKEND' ~/.config/hypr/hyprland.conf 2>/dev/null",
+      "fixCommands": [
+        "echo '' >> ~/.config/hypr/hyprland.conf",
+        "echo '# NVIDIA Wayland fixes' >> ~/.config/hypr/hyprland.conf",
+        "echo 'env = LIBVA_DRIVER_NAME,nvidia' >> ~/.config/hypr/hyprland.conf",
+        "echo 'env = XDG_SESSION_TYPE,wayland' >> ~/.config/hypr/hyprland.conf",
+        "echo 'env = GBM_BACKEND,nvidia-drm' >> ~/.config/hypr/hyprland.conf",
+        "echo 'env = __GLX_VENDOR_LIBRARY_NAME,nvidia' >> ~/.config/hypr/hyprland.conf",
+        "echo 'env = WLR_NO_HARDWARE_CURSORS,1' >> ~/.config/hypr/hyprland.conf",
+        "echo 'Applied NVIDIA env vars. Restart Hyprland to take effect.'"
+      ],
+      "requiresRoot": false
+    },
+    {
+      "id": "bluetooth-not-starting",
+      "name": "Bluetooth Not Starting",
+      "description": "Bluetooth service is installed but not enabled or active.",
+      "severity": "medium",
+      "detectCommand": "command -v bluetoothctl >/dev/null 2>&1 && ! systemctl is-active --quiet bluetooth.service",
+      "fixCommands": [
+        "sudo systemctl enable --now bluetooth.service",
+        "echo 'Bluetooth service enabled and started.'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "no-sound-pipewire",
+      "name": "No Sound (PipeWire)",
+      "description": "PipeWire or WirePlumber may need a restart after initial setup or if audio stops working.",
+      "severity": "medium",
+      "detectCommand": "! pactl info 2>/dev/null | grep -q 'PipeWire'",
+      "fixCommands": [
+        "systemctl --user restart pipewire pipewire-pulse wireplumber",
+        "echo 'PipeWire services restarted.'"
+      ],
+      "requiresRoot": false
+    },
+    {
+      "id": "pacman-keyring",
+      "name": "Pacman Keyring Errors",
+      "description": "Package signature verification failures. Re-initializes and repopulates the pacman keyring for Arch and CachyOS.",
+      "severity": "high",
+      "detectCommand": "pacman -Sy 2>&1 | grep -qi 'signature\\|key\\|invalid'",
+      "fixCommands": [
+        "sudo pacman-key --init",
+        "sudo pacman-key --populate archlinux cachyos",
+        "echo 'Keyring re-initialized and populated.'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "snapper-timeline-filling",
+      "name": "Snapper Filling Disk with Snapshots",
+      "description": "Default snapper timeline settings may create excessive snapshots. Sets conservative retention limits.",
+      "severity": "low",
+      "detectCommand": "command -v snapper >/dev/null 2>&1 && snapper -c root get-config 2>/dev/null | grep TIMELINE_LIMIT_HOURLY | grep -qv '\\b[0-5]\\b'",
+      "fixCommands": [
+        "sudo snapper -c root set-config TIMELINE_LIMIT_HOURLY=5 TIMELINE_LIMIT_DAILY=7 TIMELINE_LIMIT_WEEKLY=2 TIMELINE_LIMIT_MONTHLY=1 TIMELINE_LIMIT_YEARLY=0",
+        "echo 'Snapper retention limits updated.'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "slow-dns",
+      "name": "Slow DNS Resolution",
+      "description": "systemd-resolved can speed up DNS lookups with caching and DNS-over-TLS support.",
+      "severity": "low",
+      "detectCommand": "! systemctl is-active --quiet systemd-resolved.service",
+      "fixCommands": [
+        "sudo systemctl enable --now systemd-resolved.service",
+        "sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf",
+        "echo 'systemd-resolved enabled with stub resolver.'"
+      ],
+      "requiresRoot": true
+    },
+    {
+      "id": "missing-microcode",
+      "name": "Missing CPU Microcode",
+      "description": "CPU microcode updates fix hardware bugs and security vulnerabilities. Detects your CPU and installs the appropriate package.",
+      "severity": "high",
+      "detectCommand": "(grep -qi amd /proc/cpuinfo && ! pacman -Qq amd-ucode 2>/dev/null) || (grep -qi intel /proc/cpuinfo && ! pacman -Qq intel-ucode 2>/dev/null)",
+      "fixCommands": [
+        "if grep -qi amd /proc/cpuinfo; then sudo pacman -S --noconfirm amd-ucode; elif grep -qi intel /proc/cpuinfo; then sudo pacman -S --noconfirm intel-ucode; fi",
+        "echo 'Microcode installed. Reboot to apply.'"
+      ],
+      "requiresRoot": true
+    }
+  ]
+}

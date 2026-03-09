@@ -44,8 +44,10 @@ libnotify
 # Login manager
 greetd
 
-# Qt (for Quickshell)
+# Qt (for Quickshell + Welcome App)
 qt6-svg
+qt6-quickcontrols2
+cmake
 
 # Terminal & Shell
 kitty

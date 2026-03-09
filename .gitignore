@@ -1,0 +1,5 @@
+# Local machine-specific config
+configs/hyprland/monitors.conf
+
+# Build artifacts
+welcome-app/build/

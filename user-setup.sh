@@ -58,6 +58,11 @@ else
     backup_config ~/.config/hypr
     mkdir -p ~/.config/hypr
     cp "$SCRIPT_DIR/configs/hyprland/hyprland.conf" ~/.config/hypr/hyprland.conf
+    if [[ -f "$SCRIPT_DIR/configs/hyprland/monitors.conf" ]]; then
+        cp "$SCRIPT_DIR/configs/hyprland/monitors.conf" ~/.config/hypr/monitors.conf
+    elif [[ ! -f ~/.config/hypr/monitors.conf ]]; then
+        cp "$SCRIPT_DIR/configs/hyprland/monitors.conf.example" ~/.config/hypr/monitors.conf
+    fi
     cp "$SCRIPT_DIR/configs/hyprland/hyprpaper.conf" ~/.config/hypr/hyprpaper.conf
     cp "$SCRIPT_DIR/configs/hyprland/hyprlock.conf" ~/.config/hypr/hyprlock.conf
     cp "$SCRIPT_DIR/configs/hyprland/hypridle.conf" ~/.config/hypr/hypridle.conf
@@ -210,6 +215,33 @@ cp "$SCRIPT_DIR"/wallpapers/*.png "$SCRIPT_DIR"/wallpapers/*.jpg ~/wallpapers/ 2
     warn "Wallpapers not found in installer — copy manually to ~/wallpapers/"
 
 info "Wallpapers installed"
+
+# =============================================================================
+# Build & Install Welcome App
+# =============================================================================
+header "Building Void Command Welcome App"
+
+if command -v void-command-welcome &>/dev/null; then
+    info "Welcome app already installed — skipping"
+else
+    cmake -B "$SCRIPT_DIR/welcome-app/build" -S "$SCRIPT_DIR/welcome-app" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr 2>&1 | tail -5
+    cmake --build "$SCRIPT_DIR/welcome-app/build" -j"$(nproc)" 2>&1 | tail -5
+    sudo cmake --install "$SCRIPT_DIR/welcome-app/build" 2>&1
+
+    # Autostart on first login (removes itself after first run)
+    mkdir -p ~/.config/autostart
+    cat > ~/.config/autostart/void-command-welcome.desktop <<'AUTOSTART'
+[Desktop Entry]
+Name=Void Command Welcome
+Exec=bash -c 'void-command-welcome; rm -f ~/.config/autostart/void-command-welcome.desktop'
+Type=Application
+X-GNOME-Autostart-enabled=true
+AUTOSTART
+
+    info "Welcome app installed to /usr/bin/void-command-welcome"
+fi
 
 # =============================================================================
 # Bash Configuration

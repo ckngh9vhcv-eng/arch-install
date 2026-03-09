@@ -1,0 +1,364 @@
+{
+  "categories": [
+    {
+      "name": "Browsers",
+      "icon": "\uf0ac",
+      "apps": [
+        {
+          "name": "Firefox",
+          "package": "firefox",
+          "description": "Privacy-focused browser from Mozilla",
+          "aur": false
+        },
+        {
+          "name": "Brave",
+          "package": "brave-bin",
+          "description": "Chromium-based browser with built-in ad blocking",
+          "aur": true
+        },
+        {
+          "name": "Chromium",
+          "package": "chromium",
+          "description": "Open-source base for Google Chrome",
+          "aur": false
+        },
+        {
+          "name": "Vivaldi",
+          "package": "vivaldi",
+          "description": "Feature-rich Chromium browser with built-in tools",
+          "aur": false
+        },
+        {
+          "name": "Zen Browser",
+          "package": "zen-browser-bin",
+          "description": "Firefox-based browser focused on simplicity",
+          "aur": true
+        }
+      ]
+    },
+    {
+      "name": "Communication",
+      "icon": "\uf086",
+      "apps": [
+        {
+          "name": "Vesktop",
+          "package": "vesktop-bin",
+          "description": "Discord client with Vencord built in",
+          "aur": true
+        },
+        {
+          "name": "Telegram",
+          "package": "telegram-desktop",
+          "description": "Cloud-based messaging app",
+          "aur": false
+        },
+        {
+          "name": "Signal",
+          "package": "signal-desktop",
+          "description": "Private encrypted messaging",
+          "aur": false
+        },
+        {
+          "name": "Thunderbird",
+          "package": "thunderbird",
+          "description": "Full-featured email client from Mozilla",
+          "aur": false
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "icon": "\uf121",
+      "apps": [
+        {
+          "name": "VS Code",
+          "package": "visual-studio-code-bin",
+          "description": "Popular code editor by Microsoft",
+          "aur": true
+        },
+        {
+          "name": "Neovim",
+          "package": "neovim",
+          "description": "Hyperextensible Vim fork",
+          "aur": false
+        },
+        {
+          "name": "Zed",
+          "package": "zed-editor",
+          "description": "High-performance GPU-accelerated editor",
+          "aur": false
+        },
+        {
+          "name": "GitHub CLI",
+          "package": "github-cli",
+          "description": "GitHub from the command line",
+          "aur": false
+        },
+        {
+          "name": "Docker",
+          "package": "docker",
+          "description": "Container runtime and tooling",
+          "aur": false
+        },
+        {
+          "name": "Podman",
+          "package": "podman",
+          "description": "Daemonless container engine",
+          "aur": false
+        }
+      ]
+    },
+    {
+      "name": "Gaming",
+      "icon": "\uf11b",
+      "apps": [
+        {
+          "name": "Steam",
+          "package": "steam",
+          "description": "Valve's game distribution platform",
+          "aur": false
+        },
+        {
+          "name": "Lutris",
+          "package": "lutris",
+          "description": "Open gaming platform for Linux",
+          "aur": false
+        },
+        {
+          "name": "Heroic",
+          "package": "heroic-games-launcher-bin",
+          "description": "Epic Games and GOG launcher",
+          "aur": true
+        },
+        {
+          "name": "ProtonPlus",
+          "package": "protonplus",
+          "description": "Proton and Wine version manager",
+          "aur": true
+        },
+        {
+          "name": "Faugus Launcher",
+          "package": "faugus-launcher",
+          "description": "Simple game launcher for Wine/Proton",
+          "aur": true
+        },
+        {
+          "name": "PrismLauncher",
+          "package": "prismlauncher",
+          "description": "Open-source Minecraft launcher",
+          "aur": true
+        },
+        {
+          "name": "Moonlight",
+          "package": "moonlight-qt",
+          "description": "NVIDIA GameStream client",
+          "aur": false
+        },
+        {
+          "name": "Parsec",
+          "package": "parsec-bin",
+          "description": "Low-latency game streaming",
+          "aur": true
+        }
+      ]
+    },
+    {
+      "name": "Emulators",
+      "icon": "\uf1b2",
+      "apps": [
+        {
+          "name": "RetroArch",
+          "package": "retroarch",
+          "description": "Multi-system emulator frontend",
+          "aur": false
+        },
+        {
+          "name": "Dolphin",
+          "package": "dolphin-emu",
+          "description": "GameCube and Wii emulator",
+          "aur": true
+        },
+        {
+          "name": "PCSX2",
+          "package": "pcsx2",
+          "description": "PlayStation 2 emulator",
+          "aur": true
+        },
+        {
+          "name": "RPCS3",
+          "package": "rpcs3-bin",
+          "description": "PlayStation 3 emulator",
+          "aur": true
+        },
+        {
+          "name": "PPSSPP",
+          "package": "ppsspp",
+          "description": "PlayStation Portable emulator",
+          "aur": true
+        },
+        {
+          "name": "Cemu",
+          "package": "cemu",
+          "description": "Wii U emulator",
+          "aur": true
+        },
+        {
+          "name": "Ryujinx",
+          "package": "ryujinx",
+          "description": "Nintendo Switch emulator",
+          "aur": true
+        },
+        {
+          "name": "mGBA",
+          "package": "mgba-qt",
+          "description": "Game Boy Advance emulator",
+          "aur": true
+        },
+        {
+          "name": "melonDS",
+          "package": "melonds",
+          "description": "Nintendo DS emulator",
+          "aur": true
+        },
+        {
+          "name": "ScummVM",
+          "package": "scummvm",
+          "description": "Classic adventure game engine",
+          "aur": false
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "icon": "\uf144",
+      "apps": [
+        {
+          "name": "Spotify",
+          "package": "spotify",
+          "description": "Music streaming service",
+          "aur": true
+        },
+        {
+          "name": "Amberol",
+          "package": "amberol",
+          "description": "Simple local music player",
+          "aur": false
+        },
+        {
+          "name": "OBS Studio",
+          "package": "obs-studio",
+          "description": "Streaming and screen recording",
+          "aur": false
+        },
+        {
+          "name": "Celluloid",
+          "package": "celluloid",
+          "description": "GTK frontend for mpv video player",
+          "aur": false
+        },
+        {
+          "name": "VLC",
+          "package": "vlc",
+          "description": "Versatile media player",
+          "aur": false
+        },
+        {
+          "name": "Kodi",
+          "package": "kodi",
+          "description": "Media center application",
+          "aur": false
+        },
+        {
+          "name": "GIMP",
+          "package": "gimp",
+          "description": "Image editor and manipulation",
+          "aur": false
+        },
+        {
+          "name": "Kdenlive",
+          "package": "kdenlive",
+          "description": "Non-linear video editor",
+          "aur": false
+        }
+      ]
+    },
+    {
+      "name": "Utilities",
+      "icon": "\uf0ad",
+      "apps": [
+        {
+          "name": "Obsidian",
+          "package": "obsidian-bin",
+          "description": "Knowledge base and note-taking",
+          "aur": true
+        },
+        {
+          "name": "Thunar",
+          "package": "thunar",
+          "description": "Lightweight file manager",
+          "aur": false
+        },
+        {
+          "name": "Flameshot",
+          "package": "flameshot",
+          "description": "Screenshot tool with annotation",
+          "aur": false
+        },
+        {
+          "name": "FileZilla",
+          "package": "filezilla",
+          "description": "FTP and SFTP client",
+          "aur": false
+        },
+        {
+          "name": "KeePassXC",
+          "package": "keepassxc",
+          "description": "Offline password manager",
+          "aur": false
+        },
+        {
+          "name": "Timeshift",
+          "package": "timeshift",
+          "description": "System restore utility",
+          "aur": false
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "icon": "\uf085",
+      "apps": [
+        {
+          "name": "CachyOS Kernel Manager",
+          "package": "cachyos-kernel-manager",
+          "description": "Switch between CachyOS kernel variants",
+          "aur": false
+        },
+        {
+          "name": "Corectrl",
+          "package": "corectrl",
+          "description": "AMD GPU and CPU overclocking and fan control",
+          "aur": false
+        },
+        {
+          "name": "GreenWithEnvy",
+          "package": "gwe",
+          "description": "NVIDIA GPU management and monitoring",
+          "aur": false
+        },
+        {
+          "name": "Mission Center",
+          "package": "mission-center",
+          "description": "System resource monitor",
+          "aur": false
+        },
+        {
+          "name": "Warehouse",
+          "package": "warehouse",
+          "description": "Flatpak management GUI",
+          "aur": true
+        }
+      ]
+    }
+  ]
+}

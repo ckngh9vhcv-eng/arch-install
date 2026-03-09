@@ -1,0 +1,19 @@
+# Monitor Configuration
+# Copy this file to monitors.conf and customize for your setup.
+# This file is sourced by hyprland.conf if it exists.
+#
+# Find your monitor name with: hyprctl monitors | grep Monitor
+# Generate a custom modeline with: cvt <width> <height> <refresh_rate>
+#   Add -r for reduced blanking (lower bandwidth, more likely to work)
+#
+# Examples:
+#
+# Standard resolution + refresh rate:
+# monitor = DP-3, 2560x1440@144, auto, 1
+#
+# Overclock via custom modeline (reduced blanking):
+# monitor = DP-3, modeline 497.25 2560 2608 2640 2720 1440 1443 1448 1525 +hsync -vsync, auto, 1
+#
+# Multi-monitor (side by side):
+# monitor = DP-1, 2560x1440@144, 0x0, 1
+# monitor = HDMI-A-1, 1920x1080@60, 2560x0, 1
