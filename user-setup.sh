@@ -224,11 +224,13 @@ header "Building Void Command Welcome App"
 if command -v void-command-welcome &>/dev/null; then
     info "Welcome app already installed — skipping"
 else
-    cmake -B "$SCRIPT_DIR/welcome-app/build" -S "$SCRIPT_DIR/welcome-app" \
+    WELCOME_BUILD=$(mktemp -d)
+    cmake -B "$WELCOME_BUILD" -S "$SCRIPT_DIR/welcome-app" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr 2>&1 | tail -5
-    cmake --build "$SCRIPT_DIR/welcome-app/build" -j"$(nproc)" 2>&1 | tail -5
-    sudo cmake --install "$SCRIPT_DIR/welcome-app/build" 2>&1
+    cmake --build "$WELCOME_BUILD" -j"$(nproc)" 2>&1 | tail -5
+    sudo cmake --install "$WELCOME_BUILD" 2>&1
+    rm -rf "$WELCOME_BUILD"
 
     # Autostart on first login (removes itself after first run)
     mkdir -p ~/.config/autostart
