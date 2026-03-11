@@ -6,8 +6,8 @@
       "description": "Enable Bluetooth hardware and pairing",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet bluetooth.service",
-      "enableCommands": ["sudo systemctl enable --now bluetooth.service"],
-      "disableCommands": ["sudo systemctl disable --now bluetooth.service"],
+      "enableCommands": ["pkexec systemctl enable --now bluetooth.service"],
+      "disableCommands": ["pkexec systemctl disable --now bluetooth.service"],
       "requiresRoot": true
     },
     {
@@ -16,8 +16,8 @@
       "description": "Allow remote SSH connections to this machine",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet sshd.service",
-      "enableCommands": ["sudo systemctl enable --now sshd.service"],
-      "disableCommands": ["sudo systemctl disable --now sshd.service"],
+      "enableCommands": ["pkexec systemctl enable --now sshd.service"],
+      "disableCommands": ["pkexec systemctl disable --now sshd.service"],
       "requiresRoot": true
     },
     {
@@ -26,8 +26,8 @@
       "description": "Mesh VPN for secure networking between your devices",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet tailscaled.service",
-      "enableCommands": ["sudo systemctl enable --now tailscaled.service"],
-      "disableCommands": ["sudo systemctl disable --now tailscaled.service"],
+      "enableCommands": ["pkexec systemctl enable --now tailscaled.service"],
+      "disableCommands": ["pkexec systemctl disable --now tailscaled.service"],
       "requiresRoot": true
     },
     {
@@ -36,8 +36,8 @@
       "description": "Compressed RAM-based swap for better memory management",
       "type": "toggle",
       "checkCommand": "test -e /dev/zram0",
-      "enableCommands": ["sudo systemctl enable --now systemd-zram-setup@zram0.service"],
-      "disableCommands": ["sudo systemctl disable --now systemd-zram-setup@zram0.service"],
+      "enableCommands": ["pkexec systemctl enable --now systemd-zram-setup@zram0.service"],
+      "disableCommands": ["pkexec systemctl disable --now systemd-zram-setup@zram0.service"],
       "requiresRoot": true
     },
     {
@@ -46,8 +46,8 @@
       "description": "Container runtime daemon",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet docker.service",
-      "enableCommands": ["sudo systemctl enable --now docker.service"],
-      "disableCommands": ["sudo systemctl disable --now docker.service"],
+      "enableCommands": ["pkexec systemctl enable --now docker.service"],
+      "disableCommands": ["pkexec systemctl disable --now docker.service"],
       "requiresRoot": true
     },
     {
@@ -56,8 +56,8 @@
       "description": "QEMU/KVM virtual machine management daemon",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet libvirtd.service",
-      "enableCommands": ["sudo systemctl enable --now libvirtd.service"],
-      "disableCommands": ["sudo systemctl disable --now libvirtd.service"],
+      "enableCommands": ["pkexec systemctl enable --now libvirtd.service"],
+      "disableCommands": ["pkexec systemctl disable --now libvirtd.service"],
       "requiresRoot": true
     },
     {
@@ -76,8 +76,8 @@
       "description": "CachyOS BPF-based CPU scheduler for improved responsiveness",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet scx.service",
-      "enableCommands": ["sudo systemctl enable --now scx.service"],
-      "disableCommands": ["sudo systemctl disable --now scx.service"],
+      "enableCommands": ["pkexec systemctl enable --now scx.service"],
+      "disableCommands": ["pkexec systemctl disable --now scx.service"],
       "requiresRoot": true
     },
     {
@@ -86,8 +86,8 @@
       "description": "Automatic process priority management for better desktop responsiveness",
       "type": "toggle",
       "checkCommand": "systemctl is-active --quiet ananicy-cpp.service",
-      "enableCommands": ["sudo systemctl enable --now ananicy-cpp.service"],
-      "disableCommands": ["sudo systemctl disable --now ananicy-cpp.service"],
+      "enableCommands": ["pkexec systemctl enable --now ananicy-cpp.service"],
+      "disableCommands": ["pkexec systemctl disable --now ananicy-cpp.service"],
       "requiresRoot": true
     }
   ]

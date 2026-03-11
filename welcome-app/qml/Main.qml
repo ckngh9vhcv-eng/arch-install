@@ -7,6 +7,8 @@ ApplicationWindow {
     id: window
     width: 960
     height: 660
+    minimumWidth: 640
+    minimumHeight: 480
     visible: true
     title: "Void Command"
     color: Theme.void_

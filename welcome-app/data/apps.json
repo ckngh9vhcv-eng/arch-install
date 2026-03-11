@@ -159,6 +159,12 @@
           "package": "parsec-bin",
           "description": "Low-latency game streaming",
           "aur": true
+        },
+        {
+          "name": "Sober",
+          "package": "org.vinegarhq.Sober",
+          "description": "Roblox client for Linux",
+          "flatpak": true
         }
       ]
     },

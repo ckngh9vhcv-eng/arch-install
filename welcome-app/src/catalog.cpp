@@ -57,7 +57,10 @@ void Catalog::markInstalled()
 
         for (int j = 0; j < apps.size(); ++j) {
             QVariantMap app = apps[j].toMap();
-            app["installed"] = m_pm->isInstalled(app.value("package").toString());
+            if (app.value("flatpak").toBool())
+                app["installed"] = m_pm->isFlatpakInstalled(app.value("package").toString());
+            else
+                app["installed"] = m_pm->isInstalled(app.value("package").toString());
             apps[j] = app;
         }
 

@@ -9,6 +9,7 @@ Popup {
     property string packageName: ""
     property string appName: ""
     property bool isRemove: false
+    property bool isFlatpak: false
     property bool _finished: false
     property bool _success: false
 
@@ -84,10 +85,16 @@ Popup {
                 text: root.isRemove ? "Remove" : "Install"
                 enabled: !PackageManager.busy
                 onClicked: {
-                    if (root.isRemove) {
-                        PackageManager.remove([root.packageName]);
+                    if (root.isFlatpak) {
+                        if (root.isRemove)
+                            PackageManager.removeFlatpak(root.packageName);
+                        else
+                            PackageManager.installFlatpak(root.packageName);
                     } else {
-                        PackageManager.install([root.packageName]);
+                        if (root.isRemove)
+                            PackageManager.remove([root.packageName]);
+                        else
+                            PackageManager.install([root.packageName]);
                     }
                 }
             }

@@ -91,16 +91,16 @@ Item {
                                             }
 
                                             Rectangle {
-                                                visible: modelData.aur || false
-                                                width: aurLabel.implicitWidth + 8
+                                                visible: modelData.aur || modelData.flatpak || false
+                                                width: sourceLabel.implicitWidth + 8
                                                 height: 16
                                                 radius: 4
                                                 color: Theme.surface2
 
                                                 Text {
-                                                    id: aurLabel
+                                                    id: sourceLabel
                                                     anchors.centerIn: parent
-                                                    text: "AUR"
+                                                    text: modelData.flatpak ? "Flatpak" : "AUR"
                                                     font.family: Theme.fontFamily
                                                     font.pixelSize: 9
                                                     color: Theme.textDim
@@ -128,6 +128,7 @@ Item {
                                             installDialog.packageName = modelData.package || "";
                                             installDialog.appName = modelData.name || "";
                                             installDialog.isRemove = modelData.installed || false;
+                                            installDialog.isFlatpak = modelData.flatpak || false;
                                             installDialog.open();
                                         }
                                     }

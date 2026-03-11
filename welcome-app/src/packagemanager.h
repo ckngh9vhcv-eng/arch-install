@@ -19,6 +19,11 @@ public:
     Q_INVOKABLE void install(const QStringList &packages);
     Q_INVOKABLE void remove(const QStringList &packages);
     Q_INVOKABLE bool isInstalled(const QString &package);
+
+    Q_INVOKABLE void installFlatpak(const QString &appId);
+    Q_INVOKABLE void removeFlatpak(const QString &appId);
+    Q_INVOKABLE bool isFlatpakInstalled(const QString &appId);
+
     Q_INVOKABLE void refreshInstalled();
 
 signals:
@@ -31,12 +36,17 @@ signals:
 private:
     void detectHelper();
     void loadInstalledPackages();
+    void loadInstalledFlatpaks();
+    void updateDesktopDatabase();
     void runPackageCommand(const QStringList &args);
+    void runFlatpakCommand(const QStringList &args);
+    void startProcess(const QString &program, const QStringList &args);
     void onReadyRead();
     void onProcessFinished(int exitCode, QProcess::ExitStatus status);
 
     QString m_helper;
     QProcess *m_process = nullptr;
     QSet<QString> m_installed;
+    QSet<QString> m_installedFlatpaks;
     bool m_busy = false;
 };

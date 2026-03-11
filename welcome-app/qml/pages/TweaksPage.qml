@@ -7,15 +7,22 @@ Item {
 
     property var tweakStates: ({})
     property bool checking: false
+    property bool applying: false
 
     function loadStates() {
         let tweaks = Catalog.tweaks;
-        let states = {};
         let script = "";
+
+        // Only reset states on first load (when empty)
+        if (Object.keys(tweakStates).length === 0) {
+            let states = {};
+            for (let i = 0; i < tweaks.length; i++)
+                states[tweaks[i].id] = undefined;
+            tweakStates = states;
+        }
 
         for (let i = 0; i < tweaks.length; i++) {
             let t = tweaks[i];
-            states[t.id] = undefined;
             if (t.type === "toggle") {
                 script += t.checkCommand + " && echo 'VC:" + t.id + ":on' || echo 'VC:" + t.id + ":off'\n";
             } else if (t.type === "select") {
@@ -23,7 +30,6 @@ Item {
             }
         }
 
-        tweakStates = states;
         checking = true;
         TaskRunner.run(script);
     }
@@ -56,6 +62,18 @@ Item {
 
         function onFinished(exitCode) {
             root.checking = false;
+        }
+    }
+
+    Connections {
+        target: TaskRunner
+        enabled: root.applying
+
+        function onRunningChanged() {
+            if (!TaskRunner.running) {
+                root.applying = false;
+                root.loadStates();
+            }
         }
     }
 
@@ -139,6 +157,7 @@ Item {
                                     for (let i = 0; i < cmds.length; i++)
                                         TaskRunner.enqueue(cmds[i]);
                                     root.updateState(tweakCard.modelData.id, isChecked);
+                                    root.applying = true;
                                 }
                             }
                         }
@@ -163,6 +182,7 @@ Item {
                                             let cmd = tweakCard.modelData.selectCommand.replace("%OPTION%", modelData);
                                             TaskRunner.run(cmd);
                                             root.updateState(tweakCard.modelData.id, modelData);
+                                            root.applying = true;
                                         }
                                     }
                                 }

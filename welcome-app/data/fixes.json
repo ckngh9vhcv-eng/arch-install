@@ -8,8 +8,8 @@
       "detectCommand": "pacman -Qq lib32-mesa-git 2>/dev/null && ! pacman -Qq lib32-mesa 2>/dev/null",
       "fixCommands": [
         "echo 'Installing individual lib32 packages (skipping conflicts with CachyOS optimized versions)...'",
-        "sudo pacman -S --noconfirm --needed lib32-mesa 2>/dev/null || echo 'Skipped lib32-mesa (CachyOS version installed)'",
-        "sudo pacman -S --noconfirm --needed lib32-vulkan-radeon 2>/dev/null || echo 'Skipped lib32-vulkan-radeon (CachyOS version installed)'"
+        "pkexec pacman -S --noconfirm --needed lib32-mesa 2>/dev/null || echo 'Skipped lib32-mesa (CachyOS version installed)'",
+        "pkexec pacman -S --noconfirm --needed lib32-vulkan-radeon 2>/dev/null || echo 'Skipped lib32-vulkan-radeon (CachyOS version installed)'"
       ],
       "requiresRoot": true
     },
@@ -20,7 +20,7 @@
       "severity": "low",
       "detectCommand": "! command -v xhost >/dev/null 2>&1",
       "fixCommands": [
-        "sudo pacman -S --noconfirm --needed xorg-xhost",
+        "pkexec pacman -S --noconfirm --needed xorg-xhost",
         "echo 'Installed. Run: xhost +SI:localuser:root before launching root GUI apps.'"
       ],
       "requiresRoot": true
@@ -50,7 +50,7 @@
       "severity": "medium",
       "detectCommand": "command -v bluetoothctl >/dev/null 2>&1 && ! systemctl is-active --quiet bluetooth.service",
       "fixCommands": [
-        "sudo systemctl enable --now bluetooth.service",
+        "pkexec systemctl enable --now bluetooth.service",
         "echo 'Bluetooth service enabled and started.'"
       ],
       "requiresRoot": true
@@ -74,8 +74,8 @@
       "severity": "high",
       "detectCommand": "pacman -Sy 2>&1 | grep -qi 'signature\\|key\\|invalid'",
       "fixCommands": [
-        "sudo pacman-key --init",
-        "sudo pacman-key --populate archlinux cachyos",
+        "pkexec pacman-key --init",
+        "pkexec pacman-key --populate archlinux cachyos",
         "echo 'Keyring re-initialized and populated.'"
       ],
       "requiresRoot": true
@@ -87,7 +87,7 @@
       "severity": "low",
       "detectCommand": "command -v snapper >/dev/null 2>&1 && snapper -c root get-config 2>/dev/null | grep TIMELINE_LIMIT_HOURLY | grep -qv '\\b[0-5]\\b'",
       "fixCommands": [
-        "sudo snapper -c root set-config TIMELINE_LIMIT_HOURLY=5 TIMELINE_LIMIT_DAILY=7 TIMELINE_LIMIT_WEEKLY=2 TIMELINE_LIMIT_MONTHLY=1 TIMELINE_LIMIT_YEARLY=0",
+        "pkexec snapper -c root set-config TIMELINE_LIMIT_HOURLY=5 TIMELINE_LIMIT_DAILY=7 TIMELINE_LIMIT_WEEKLY=2 TIMELINE_LIMIT_MONTHLY=1 TIMELINE_LIMIT_YEARLY=0",
         "echo 'Snapper retention limits updated.'"
       ],
       "requiresRoot": true
@@ -99,8 +99,8 @@
       "severity": "low",
       "detectCommand": "! systemctl is-active --quiet systemd-resolved.service",
       "fixCommands": [
-        "sudo systemctl enable --now systemd-resolved.service",
-        "sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf",
+        "pkexec systemctl enable --now systemd-resolved.service",
+        "pkexec ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf",
         "echo 'systemd-resolved enabled with stub resolver.'"
       ],
       "requiresRoot": true
@@ -112,7 +112,7 @@
       "severity": "high",
       "detectCommand": "(grep -qi amd /proc/cpuinfo && ! pacman -Qq amd-ucode 2>/dev/null) || (grep -qi intel /proc/cpuinfo && ! pacman -Qq intel-ucode 2>/dev/null)",
       "fixCommands": [
-        "if grep -qi amd /proc/cpuinfo; then sudo pacman -S --noconfirm amd-ucode; elif grep -qi intel /proc/cpuinfo; then sudo pacman -S --noconfirm intel-ucode; fi",
+        "if grep -qi amd /proc/cpuinfo; then pkexec pacman -S --noconfirm amd-ucode; elif grep -qi intel /proc/cpuinfo; then pkexec pacman -S --noconfirm intel-ucode; fi",
         "echo 'Microcode installed. Reboot to apply.'"
       ],
       "requiresRoot": true
