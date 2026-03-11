@@ -6,29 +6,26 @@ Item {
     id: root
 
     property var tweakStates: ({})
-    property var checkQueue: []
-    property int checkIndex: -1
     property bool checking: false
 
     function loadStates() {
         let tweaks = Catalog.tweaks;
         let states = {};
-        for (let i = 0; i < tweaks.length; i++)
-            states[tweaks[i].id] = undefined;
-        tweakStates = states;
+        let script = "";
 
-        checkQueue = tweaks;
-        checkIndex = 0;
-        checking = true;
-        runNextCheck();
-    }
-
-    function runNextCheck() {
-        if (checkIndex >= checkQueue.length) {
-            checking = false;
-            return;
+        for (let i = 0; i < tweaks.length; i++) {
+            let t = tweaks[i];
+            states[t.id] = undefined;
+            if (t.type === "toggle") {
+                script += t.checkCommand + " && echo 'VC:" + t.id + ":on' || echo 'VC:" + t.id + ":off'\n";
+            } else if (t.type === "select") {
+                script += "echo 'VC:" + t.id + ":'$(" + t.checkCommand + ")\n";
+            }
         }
-        TaskRunner.run(checkQueue[checkIndex].checkCommand);
+
+        tweakStates = states;
+        checking = true;
+        TaskRunner.run(script);
     }
 
     function updateState(id, value) {
@@ -42,27 +39,30 @@ Item {
         enabled: root.checking
 
         function onOutputLine(line) {
-            if (root.checkIndex < 0 || root.checkIndex >= root.checkQueue.length)
+            if (!line.startsWith("VC:"))
                 return;
-            let tweak = root.checkQueue[root.checkIndex];
-            if (tweak.type === "select")
-                root.updateState(tweak.id, line.trim());
+            let parts = line.substring(3).split(":");
+            if (parts.length < 2)
+                return;
+            let id = parts[0];
+            let value = parts.slice(1).join(":").trim();
+            if (value === "on")
+                root.updateState(id, true);
+            else if (value === "off")
+                root.updateState(id, false);
+            else
+                root.updateState(id, value);
         }
 
         function onFinished(exitCode) {
-            if (root.checkIndex < 0 || root.checkIndex >= root.checkQueue.length)
-                return;
-
-            let tweak = root.checkQueue[root.checkIndex];
-            if (tweak.type === "toggle")
-                root.updateState(tweak.id, exitCode === 0);
-
-            root.checkIndex++;
-            root.runNextCheck();
+            root.checking = false;
         }
     }
 
-    Component.onCompleted: loadStates()
+    StackLayout.onIsCurrentItemChanged: {
+        if (StackLayout.isCurrentItem && !checking)
+            loadStates();
+    }
 
     Flickable {
         anchors.fill: parent
@@ -126,6 +126,7 @@ Item {
                         }
 
                         Loader {
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                             active: tweakCard.modelData.type === "toggle"
                             sourceComponent: VcToggle {
                                 checked: root.tweakStates[tweakCard.modelData.id] === true
@@ -143,6 +144,7 @@ Item {
                         }
 
                         Loader {
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                             active: tweakCard.modelData.type === "select"
                             sourceComponent: Row {
                                 spacing: 6

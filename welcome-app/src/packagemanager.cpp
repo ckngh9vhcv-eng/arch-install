@@ -90,7 +90,15 @@ void PackageManager::runPackageCommand(const QStringList &args)
     m_busy = true;
     emit busyChanged();
 
-    m_process->start(m_helper, args);
+    if (m_helper == "pacman") {
+        // No AUR helper — elevate pacman directly via pkexec
+        m_process->start("pkexec", QStringList{"pacman"} + args);
+    } else {
+        // paru/yay: run as current user, tell it to use pkexec instead of sudo
+        QStringList helperArgs = {"--sudo", "pkexec"};
+        helperArgs.append(args);
+        m_process->start(m_helper, helperArgs);
+    }
 }
 
 void PackageManager::onReadyRead()

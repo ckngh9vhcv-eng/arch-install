@@ -6,50 +6,50 @@ Item {
     id: root
 
     property var fixResults: ({})
-    property var scanQueue: []
-    property int scanIndex: -1
     property bool scanning: false
 
     function startScan() {
         let fixes = Catalog.fixes;
         let results = {};
-        for (let i = 0; i < fixes.length; i++)
-            results[fixes[i].id] = "checking";
-        fixResults = results;
+        let script = "";
 
-        scanQueue = fixes;
-        scanIndex = 0;
-        scanning = true;
-        runNextDetect();
-    }
-
-    function runNextDetect() {
-        if (scanIndex >= scanQueue.length) {
-            scanning = false;
-            return;
+        for (let i = 0; i < fixes.length; i++) {
+            let f = fixes[i];
+            results[f.id] = "checking";
+            script += f.detectCommand + " && echo 'VC:" + f.id + ":detected' || echo 'VC:" + f.id + ":clear'\n";
         }
-        TaskRunner.run(scanQueue[scanIndex].detectCommand);
+
+        fixResults = results;
+        scanning = true;
+        TaskRunner.run(script);
     }
 
     Connections {
         target: TaskRunner
         enabled: root.scanning
 
-        function onFinished(exitCode) {
-            if (root.scanIndex < 0 || root.scanIndex >= root.scanQueue.length)
+        function onOutputLine(line) {
+            if (!line.startsWith("VC:"))
                 return;
-
-            let fix = root.scanQueue[root.scanIndex];
+            let parts = line.substring(3).split(":");
+            if (parts.length < 2)
+                return;
+            let id = parts[0];
+            let value = parts.slice(1).join(":").trim();
             let updated = Object.assign({}, root.fixResults);
-            updated[fix.id] = (exitCode === 0) ? "detected" : "clear";
+            updated[id] = value;
             root.fixResults = updated;
+        }
 
-            root.scanIndex++;
-            root.runNextDetect();
+        function onFinished(exitCode) {
+            root.scanning = false;
         }
     }
 
-    Component.onCompleted: startScan()
+    StackLayout.onIsCurrentItemChanged: {
+        if (StackLayout.isCurrentItem && !scanning)
+            startScan();
+    }
 
     Flickable {
         anchors.fill: parent

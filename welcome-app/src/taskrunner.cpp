@@ -90,7 +90,14 @@ void TaskRunner::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus
 
     // Treat crashes as failures
     int code = (exitStatus == QProcess::NormalExit) ? exitCode : -1;
+
+    // Save current process — the finished handler may call run() which replaces m_process
+    QProcess *completed = m_process;
     emit finished(code);
+
+    // If the signal handler started a new task, don't touch state
+    if (m_process != completed)
+        return;
 
     if (!m_queue.isEmpty()) {
         startNext();
