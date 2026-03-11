@@ -33,6 +33,12 @@
           "package": "zen-browser-bin",
           "description": "Firefox-based browser focused on simplicity",
           "aur": true
+        },
+        {
+          "name": "Floorp",
+          "package": "floorp-bin",
+          "description": "Firefox fork with vertical tabs and workspaces",
+          "aur": true
         }
       ]
     },
@@ -63,6 +69,18 @@
           "package": "thunderbird",
           "description": "Full-featured email client from Mozilla",
           "aur": false
+        },
+        {
+          "name": "Element",
+          "package": "element-desktop",
+          "description": "Matrix decentralized chat client",
+          "aur": false
+        },
+        {
+          "name": "Slack",
+          "package": "slack-desktop",
+          "description": "Team communication platform",
+          "aur": true
         }
       ]
     },
@@ -104,6 +122,24 @@
           "name": "Podman",
           "package": "podman",
           "description": "Daemonless container engine",
+          "aur": false
+        },
+        {
+          "name": "Godot",
+          "package": "godot",
+          "description": "Open-source game engine",
+          "aur": false
+        },
+        {
+          "name": "Blender",
+          "package": "blender",
+          "description": "3D modeling, animation, and rendering",
+          "aur": false
+        },
+        {
+          "name": "DBeaver",
+          "package": "dbeaver",
+          "description": "Universal database management GUI",
           "aur": false
         }
       ]
@@ -165,6 +201,24 @@
           "package": "org.vinegarhq.Sober",
           "description": "Roblox client for Linux",
           "flatpak": true
+        },
+        {
+          "name": "MangoHud",
+          "package": "mangohud",
+          "description": "FPS overlay and performance monitor",
+          "aur": false
+        },
+        {
+          "name": "Gamescope",
+          "package": "gamescope",
+          "description": "Valve's micro-compositor for gaming",
+          "aur": false
+        },
+        {
+          "name": "Bottles",
+          "package": "bottles",
+          "description": "Run Windows apps and games via Wine",
+          "aur": true
         }
       ]
     },
@@ -285,6 +339,42 @@
           "package": "kdenlive",
           "description": "Non-linear video editor",
           "aur": false
+        },
+        {
+          "name": "Audacity",
+          "package": "audacity",
+          "description": "Audio editor and recorder",
+          "aur": false
+        },
+        {
+          "name": "Inkscape",
+          "package": "inkscape",
+          "description": "Vector graphics editor",
+          "aur": false
+        },
+        {
+          "name": "Krita",
+          "package": "krita",
+          "description": "Digital painting and illustration",
+          "aur": false
+        },
+        {
+          "name": "Handbrake",
+          "package": "handbrake",
+          "description": "Video transcoder and converter",
+          "aur": false
+        },
+        {
+          "name": "Stremio",
+          "package": "stremio",
+          "description": "Streaming media aggregator",
+          "aur": true
+        },
+        {
+          "name": "FreeTube",
+          "package": "freetube-bin",
+          "description": "Private YouTube client",
+          "aur": true
         }
       ]
     },
@@ -327,6 +417,36 @@
           "package": "timeshift",
           "description": "System restore utility",
           "aur": false
+        },
+        {
+          "name": "qBittorrent",
+          "package": "qbittorrent",
+          "description": "Open-source torrent client",
+          "aur": false
+        },
+        {
+          "name": "Syncthing",
+          "package": "syncthing",
+          "description": "Continuous peer-to-peer file sync",
+          "aur": false
+        },
+        {
+          "name": "BleachBit",
+          "package": "bleachbit",
+          "description": "System cleaner and disk space recovery",
+          "aur": false
+        },
+        {
+          "name": "Pika Backup",
+          "package": "pika-backup",
+          "description": "Simple encrypted backups with GUI",
+          "aur": false
+        },
+        {
+          "name": "LocalSend",
+          "package": "localsend-bin",
+          "description": "Local file sharing like AirDrop",
+          "aur": true
         }
       ]
     },
@@ -363,6 +483,24 @@
           "package": "warehouse",
           "description": "Flatpak management GUI",
           "aur": true
+        },
+        {
+          "name": "Ventoy",
+          "package": "ventoy-bin",
+          "description": "Bootable USB creator for multiple ISOs",
+          "aur": true
+        },
+        {
+          "name": "GParted",
+          "package": "gparted",
+          "description": "Disk partition manager",
+          "aur": false
+        },
+        {
+          "name": "Btop",
+          "package": "btop",
+          "description": "Terminal resource monitor",
+          "aur": false
         }
       ]
     }

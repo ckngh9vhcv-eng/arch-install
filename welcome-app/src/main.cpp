@@ -1,7 +1,9 @@
 #include <QGuiApplication>
+#include <QLockFile>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QStandardPaths>
 
 #include "packagemanager.h"
 #include "taskrunner.h"
@@ -14,6 +16,13 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setApplicationName("Void Command Welcome");
     app.setOrganizationName("VoidCommand");
+
+    // Single-instance guard
+    QString lockPath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation)
+                       + "/void-command-welcome.lock";
+    QLockFile lockFile(lockPath);
+    if (!lockFile.tryLock(100))
+        return 0;
 
     QQuickStyle::setStyle("Basic");
 
