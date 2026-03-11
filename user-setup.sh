@@ -232,16 +232,6 @@ else
     sudo cmake --install "$WELCOME_BUILD" 2>&1
     rm -rf "$WELCOME_BUILD"
 
-    # Autostart on first login (removes itself after first run)
-    mkdir -p ~/.config/autostart
-    cat > ~/.config/autostart/void-command-welcome.desktop <<'AUTOSTART'
-[Desktop Entry]
-Name=Void Command Welcome
-Exec=bash -c 'void-command-welcome; rm -f ~/.config/autostart/void-command-welcome.desktop'
-Type=Application
-X-GNOME-Autostart-enabled=true
-AUTOSTART
-
     info "Welcome app installed to /usr/bin/void-command-welcome"
 fi
 
