@@ -48,7 +48,8 @@ ApplicationWindow {
                         { icon: "\uf1b2", label: "Apps", page: 1 },
                         { icon: "\uf0ad", label: "Fixes", page: 2 },
                         { icon: "\uf1de", label: "Tweaks", page: 3 },
-                        { icon: "\uf05a", label: "About", page: 4 }
+                        { icon: "\uf108", label: "Display", page: 4 },
+                        { icon: "\uf05a", label: "About", page: 5 }
                     ]
 
                     delegate: Rectangle {
@@ -133,6 +134,7 @@ ApplicationWindow {
             AppsPage {}
             FixesPage {}
             TweaksPage {}
+            DisplayPage {}
             AboutPage {}
         }
     }

@@ -16,6 +16,7 @@ qt_add_executable(void-command-welcome
     src/systeminfo.h src/systeminfo.cpp
     src/catalog.h src/catalog.cpp
     src/themewatcher.h src/themewatcher.cpp
+    src/displaymanager.h src/displaymanager.cpp
 )
 
 set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -37,6 +38,7 @@ qt_add_qml_module(void-command-welcome
         qml/pages/AppsPage.qml
         qml/pages/FixesPage.qml
         qml/pages/TweaksPage.qml
+        qml/pages/DisplayPage.qml
         qml/pages/AboutPage.qml
         qml/dialogs/InstallDialog.qml
         qml/dialogs/FixDialog.qml

@@ -10,6 +10,7 @@
 #include "systeminfo.h"
 #include "catalog.h"
 #include "themewatcher.h"
+#include "displaymanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
     SystemInfo systemInfo;
     Catalog catalog(&packageManager);
     ThemeWatcher themeWatcher;
+    DisplayManager displayManager;
 
     QQmlApplicationEngine engine;
 
@@ -39,6 +41,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("SystemInfo", &systemInfo);
     engine.rootContext()->setContextProperty("Catalog", &catalog);
     engine.rootContext()->setContextProperty("ThemeWatcher", &themeWatcher);
+    engine.rootContext()->setContextProperty("DisplayManager", &displayManager);
 
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed,
