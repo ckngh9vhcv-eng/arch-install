@@ -10,6 +10,7 @@ import "dock" as Dock
 import "clipboard" as Clipboard
 import "screenshot" as Screenshot
 import "osd" as Osd
+import "overview" as Overview
 
 ShellRoot {
     // IPC handler for keybind integration
@@ -55,6 +56,10 @@ ShellRoot {
         function toggleRecording(): void {
             ShellGlobals.toggleRecording();
         }
+
+        function toggleOverview(): void {
+            overview.toggle();
+        }
     }
 
     // Status bar on every screen
@@ -99,6 +104,11 @@ ShellRoot {
     // Bottom dock
     Dock.Dock {
         id: dock
+    }
+
+    // Workspace overview
+    Overview.Overview {
+        id: overview
     }
 
     // Volume/Brightness OSD
