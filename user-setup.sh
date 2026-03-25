@@ -148,6 +148,11 @@ DCONF
     ln -sf /usr/lib/systemd/user/mpd.service ~/.config/systemd/user/default.target.wants/mpd.service
     ln -sf /usr/lib/systemd/user/mpdris2.service ~/.config/systemd/user/default.target.wants/mpdris2.service
 
+    # Enable hyprpaper as a systemd user service (prevents race condition at boot)
+    mkdir -p ~/.config/systemd/user ~/.config/systemd/user/graphical-session.target.wants
+    cp "$SCRIPT_DIR/configs/systemd/user/hyprpaper.service" ~/.config/systemd/user/hyprpaper.service
+    ln -sf ~/.config/systemd/user/hyprpaper.service ~/.config/systemd/user/graphical-session.target.wants/hyprpaper.service
+
     # Fastfetch
     backup_config ~/.config/fastfetch
     mkdir -p ~/.config/fastfetch
