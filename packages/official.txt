@@ -69,6 +69,7 @@ qt6ct
 breeze-icons
 breeze-gtk
 adw-gtk-theme
+matugen
 
 # CLI Tools
 nano

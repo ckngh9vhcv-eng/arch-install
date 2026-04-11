@@ -41,6 +41,10 @@ ShellRoot {
             Theme.cycleWallpaper();
         }
 
+        function applyScheme(name: string): void {
+            Theme.applyScheme(name);
+        }
+
         function toggleGameMode(): void {
             ShellGlobals.toggleGameMode();
         }

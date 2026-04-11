@@ -69,7 +69,7 @@ QtObject {
 
     property var schemeNames: [
         "void-command", "ember", "ocean", "verdant",
-        "frost", "solar", "nord", "tokyo-night"
+        "frost", "solar", "nord", "tokyo-night", "auto"
     ]
 
     property var schemeDisplayNames: ({
@@ -80,9 +80,12 @@ QtObject {
         "frost": "Frost",
         "solar": "Solar",
         "nord": "Nord",
-        "tokyo-night": "Tokyo Night"
+        "tokyo-night": "Tokyo Night",
+        "auto": "Wallpaper (Auto)"
     })
 
+    // Note: "auto" entry is a fallback — the real icon theme is selected
+    // dynamically from the generated primary hue. See _iconThemeForHue().
     property var schemeIconThemes: ({
         "void-command": "Tela-circle-purple-dark",
         "ember": "Tela-circle-red-dark",
@@ -91,7 +94,8 @@ QtObject {
         "frost": "Tela-circle-grey-dark",
         "solar": "Tela-circle-orange-dark",
         "nord": "Tela-circle-nord-dark",
-        "tokyo-night": "Tela-circle-dracula-dark"
+        "tokyo-night": "Tela-circle-dracula-dark",
+        "auto": "Tela-circle-grey-dark"
     })
 
     property var schemes: ({
@@ -286,6 +290,33 @@ QtObject {
                 g4: "#7aa2f7", g5: "#3b4261", g6: "#292e42",
                 fg1: "#a9b1d6", fg2: "#c0caf5", fgDark: "#1a1b26"
             }
+        },
+        // Auto scheme — populated by matugen from the current wallpaper.
+        // The values below are a neutral Void Command-like fallback that only
+        // shows up before the first matugen run (cold start, no cache).
+        "auto": {
+            void_: "#06060C", surface0: "#0A0A14", surface1: "#10101E",
+            surface2: "#181828", surface3: "#222236",
+            accent: "#8B6FC0", accentDim: "#5C3F8F", accentBright: "#A88AE0", accentGlow: "#7C5CBF",
+            textPrimary: "#E0D4F0", textSecondary: "#B8A0D6", textDim: "#7A6890",
+            wallpaper: "auto/_test.png",
+            selectionBg: "#2A1F3D",
+            ansi: {
+                color0: "#06060C", color8: "#2A1F3D",
+                color1: "#CC4444", color9: "#E06666",
+                color2: "#44AA77", color10: "#66CC99",
+                color3: "#CCAA44", color11: "#EEBB66",
+                color4: "#6688CC", color12: "#88AAEE",
+                color5: "#8B6FC0", color13: "#B8A0D6",
+                color6: "#44AAAA", color14: "#66CCCC",
+                color7: "#B8A0D6", color15: "#E0D4F0"
+            },
+            qtHighlight: "#5c478c",
+            starship: {
+                g1: "#1E1529", g2: "#2D2040", g3: "#3D2B5A",
+                g4: "#7C5CBF", g5: "#503D6B", g6: "#3B2D50",
+                fg1: "#B8A0D6", fg2: "#D4C4E9", fgDark: "#1E1529"
+            }
         }
     })
 
@@ -370,14 +401,61 @@ QtObject {
         // command set dynamically in updateAppConfigs
     }
 
+    // --- Matugen (dynamic wallpaper-based palette) ---
+    property string _matugenStdout: ""
+    property string _pendingAutoWallpaperFile: ""
+    property var _matugenCache: ({})
+
+    property var matugenProc: Process {
+        // command set dynamically in _runMatugen()
+        stdout: SplitParser {
+            onRead: data => { root._matugenStdout += data }
+        }
+        onExited: (code, status) => {
+            if (code !== 0 || root._matugenStdout.length === 0) {
+                console.warn("matugen failed (code=" + code + "), keeping previous palette");
+                root._matugenStdout = "";
+                return;
+            }
+            try {
+                var mtg = JSON.parse(root._matugenStdout);
+                var wpFile = root._pendingAutoWallpaperFile;
+                var scheme = root._buildSchemeFromMatugen(mtg, wpFile);
+                root._matugenCache[wpFile] = scheme;
+                root._persistMatugenCache();
+                root._applyAutoScheme(scheme, wpFile);
+            } catch (e) {
+                console.warn("matugen JSON parse failed: " + e);
+            }
+            root._matugenStdout = "";
+        }
+    }
+
+    property var matugenCacheFileView: FileView {
+        path: root.homeDir + "/.cache/void-command/matugen-cache.json"
+        atomicWrites: true
+        onLoaded: {
+            var content = text();
+            if (content && content.length > 0) {
+                try { root._matugenCache = JSON.parse(content); } catch (e) {}
+            }
+        }
+    }
+
     // --- Wallpaper discovery ---
     property var wallpaperDiscoverProc: Process {
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim();
                 if (line.length > 0) {
-                    var parts = line.split("/");
-                    root._pendingWallpapers.push(parts[parts.length - 1]);
+                    // Auto wallpapers live in a subfolder; preserve the
+                    // "auto/" prefix so path composition works downstream.
+                    if (line.indexOf("auto/") === 0) {
+                        root._pendingWallpapers.push(line);
+                    } else {
+                        var parts = line.split("/");
+                        root._pendingWallpapers.push(parts[parts.length - 1]);
+                    }
                 }
             }
         }
@@ -404,18 +482,41 @@ QtObject {
         wallpaperDiscoverProc.running = false;
         root._pendingWallpapers = [];
         var dir = root.homeDir + "/wallpapers/";
-        wallpaperDiscoverProc.command = ["sh", "-c",
-            "ls -1 " + dir + schemeName + ".png " +
-            dir + schemeName + ".jpg " +
-            dir + schemeName + "-[0-9]*.png " +
-            dir + schemeName + "-[0-9]*.jpg 2>/dev/null"
-        ];
+        if (schemeName === "auto") {
+            // Auto scheme: list every image in ~/wallpapers/auto/ and store
+            // entries as "auto/<filename>" so path composition downstream
+            // (hyprpaper/hyprlock) works unchanged.
+            wallpaperDiscoverProc.command = ["sh", "-c",
+                "cd " + dir + " 2>/dev/null && " +
+                "ls -1 auto/*.png auto/*.jpg auto/*.jpeg auto/*.webp 2>/dev/null | sort"
+            ];
+        } else {
+            wallpaperDiscoverProc.command = ["sh", "-c",
+                "ls -1 " + dir + schemeName + ".png " +
+                dir + schemeName + ".jpg " +
+                dir + schemeName + "-[0-9]*.png " +
+                dir + schemeName + "-[0-9]*.jpg 2>/dev/null"
+            ];
+        }
         wallpaperDiscoverProc.running = true;
     }
 
     function _applyCurrentWallpaper() {
         if (root.currentWallpapers.length === 0) return;
         var wallpaperFile = root.currentWallpapers[root.currentWallpaperIndex];
+
+        if (root.currentScheme === "auto") {
+            // Auto scheme: generate (or recall from cache) the palette, then
+            // apply colors and write all downstream configs in one coherent pass.
+            var cached = root._matugenCache[wallpaperFile];
+            if (cached) {
+                root._applyAutoScheme(cached, wallpaperFile);
+            } else {
+                root._runMatugen(wallpaperFile);
+            }
+            return;
+        }
+
         var s = root.schemes[root.currentScheme];
         if (!s) return;
         hyprpaperFileView.setText(generateHyprpaperConf(wallpaperFile));
@@ -455,6 +556,17 @@ QtObject {
             schemeTransitionRequested(oldWp);
         }
 
+        currentScheme = name;
+
+        // Auto scheme short-circuit: don't apply static placeholder colors or
+        // generate configs here — wait until matugen (or the cache) provides
+        // the real palette in _applyCurrentWallpaper()/_applyAutoScheme().
+        if (name === "auto") {
+            if (!skipSave) saveScheme();
+            discoverWallpapers(name);
+            return;
+        }
+
         void_ = s.void_;
         surface0 = s.surface0;
         surface1 = s.surface1;
@@ -467,8 +579,6 @@ QtObject {
         textPrimary = s.textPrimary;
         textSecondary = s.textSecondary;
         textDim = s.textDim;
-
-        currentScheme = name;
 
         if (!skipSave) {
             saveScheme();
@@ -505,6 +615,261 @@ QtObject {
             "sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=" + iconTheme + "/' ~/.config/gtk-3.0/settings.ini"
         ];
         iconThemeProc.running = true;
+    }
+
+    // --- Matugen: dynamic palette generation from wallpaper ---
+
+    // Spawn matugen and stream its JSON output into _matugenStdout.
+    // Uses: scheme-vibrant (punchy accents), --prefer saturation (pick the
+    // most vivid source color), --contrast 0.3 (slightly crisper text),
+    // --dry-run (no side effects — we consume JSON only).
+    function _runMatugen(wallpaperFile) {
+        var wp = root.homeDir + "/wallpapers/" + wallpaperFile;
+        root._matugenStdout = "";
+        root._pendingAutoWallpaperFile = wallpaperFile;
+        matugenProc.running = false;
+        matugenProc.command = ["sh", "-c",
+            "matugen image '" + wp + "' --json hex --mode dark " +
+            "--dry-run --quiet --prefer saturation --type scheme-vibrant " +
+            "--contrast 0.3 | tr -d '\\n'"
+        ];
+        matugenProc.running = true;
+    }
+
+    // Apply a generated auto scheme: replace schemes.auto, animate color
+    // properties, regenerate all downstream configs, write hyprpaper/hyprlock,
+    // and hue-match the icon theme.
+    function _applyAutoScheme(scheme, wallpaperFile) {
+        // Stash in the schemes map so persistence + general code paths work.
+        var schemesCopy = root.schemes;
+        schemesCopy["auto"] = scheme;
+        root.schemes = schemesCopy;
+
+        // Animated color properties (Behavior on color handles the fade).
+        root.void_ = scheme.void_;
+        root.surface0 = scheme.surface0;
+        root.surface1 = scheme.surface1;
+        root.surface2 = scheme.surface2;
+        root.surface3 = scheme.surface3;
+        root.accent = scheme.accent;
+        root.accentDim = scheme.accentDim;
+        root.accentBright = scheme.accentBright;
+        root.accentGlow = scheme.accentGlow;
+        root.textPrimary = scheme.textPrimary;
+        root.textSecondary = scheme.textSecondary;
+        root.textDim = scheme.textDim;
+
+        // Hue-match the icon theme based on generated primary.
+        var iconTheme = root._iconThemeForColor(scheme.accent);
+        var iconThemes = root.schemeIconThemes;
+        iconThemes["auto"] = iconTheme;
+        root.schemeIconThemes = iconThemes;
+
+        updateAppConfigs(scheme);
+        hyprpaperFileView.setText(generateHyprpaperConf(wallpaperFile));
+        hyprlockFileView.setText(generateHyprlockConf(scheme, wallpaperFile));
+        hyprpaperRestartProc.running = true;
+    }
+
+    // Persist the matugen palette cache to ~/.cache/void-command/.
+    function _persistMatugenCache() {
+        matugenCacheFileView.setText(JSON.stringify(root._matugenCache, null, 2));
+    }
+
+    // Build a full Void Command scheme object from a matugen JSON payload.
+    // Maps M3 roles → VC slots with an eye toward the deep-black aesthetic.
+    function _buildSchemeFromMatugen(mtg, wallpaperFile) {
+        var c = mtg.colors;
+        var p = mtg.palettes;
+        function role(name) { return c[name].dark.color; }
+        function tone(palette, t) { return p[palette][String(t)].color; }
+
+        // Surface ladder — pull from M3 container tones. The deepest "void_"
+        // slot uses neutral tone 5 (near-black with wallpaper-tinted hue) to
+        // preserve the signature black-black backdrop under every palette.
+        var void_ = tone("neutral", 5);
+        var surface0 = role("surface_container_lowest");
+        var surface1 = role("surface_container_low");
+        var surface2 = role("surface_container");
+        var surface3 = role("surface_container_high");
+
+        // Accent family from the primary palette's tonal ladder.
+        // tone 90 ≈ bright, tone 70 ≈ glow, tone 40 ≈ dim.
+        var accent = role("primary");                   // M3-clamped for dark mode
+        var accentDim = tone("primary", 40);
+        var accentBright = tone("primary", 90);
+        var accentGlow = tone("primary", 70);
+
+        // Text ladder from M3 semantic on_surface roles.
+        var textPrimary = role("on_surface");
+        var textSecondary = role("on_surface_variant");
+        var textDim = role("outline");
+
+        // Selection bg: primary container — keeps the accent feel on selected text.
+        var selectionBg = role("primary_container");
+
+        // Qt highlight: a slightly-darker accent for button highlights.
+        var qtHighlight = tone("primary", 35);
+
+        // Harmonized ANSI: use M3 semantic palettes where they exist (error for
+        // red, primary for magenta, tertiary for cyan) and pick fixed-hue
+        // anchors from matched tones for green/yellow/blue so terminal output
+        // stays legible regardless of wallpaper hue.
+        var ansi = root._harmonizedAnsi(mtg);
+
+        // Starship gradient: walk up the primary tonal ladder for a smooth
+        // left-to-right color gradient in the prompt segments.
+        var starship = {
+            g1: tone("neutral", 10),
+            g2: tone("primary", 15),
+            g3: tone("primary", 25),
+            g4: tone("primary", 50),
+            g5: tone("primary", 30),
+            g6: tone("primary", 20),
+            fg1: role("on_surface_variant"),
+            fg2: role("on_surface"),
+            fgDark: tone("neutral", 10)
+        };
+
+        return {
+            void_: void_,
+            surface0: surface0,
+            surface1: surface1,
+            surface2: surface2,
+            surface3: surface3,
+            accent: accent,
+            accentDim: accentDim,
+            accentBright: accentBright,
+            accentGlow: accentGlow,
+            textPrimary: textPrimary,
+            textSecondary: textSecondary,
+            textDim: textDim,
+            wallpaper: wallpaperFile,
+            selectionBg: selectionBg,
+            ansi: ansi,
+            qtHighlight: qtHighlight,
+            starship: starship
+        };
+    }
+
+    // Harmonized ANSI derivation.
+    //
+    // Strategy: use M3's semantic palettes for the slots that match (error →
+    // red, primary → magenta, tertiary → cyan) and derive green/yellow/blue
+    // from the primary palette's saturation/lightness profile at fixed hue
+    // anchors. This keeps terminal output legible under any wallpaper while
+    // harmonizing saturation across all 16 slots.
+    function _harmonizedAnsi(mtg) {
+        var c = mtg.colors;
+        var p = mtg.palettes;
+        function role(name) { return c[name].dark.color; }
+        function tone(pal, t) { return p[pal][String(t)].color; }
+
+        // Profile the primary at tone 70 to lift saturation/lightness for derived hues.
+        var primaryMid = tone("primary", 70);
+        var prof = root._hexToHsl(primaryMid);
+        // Clamp S/L into a readable band so the derived colors don't fight the surface.
+        var sNorm = Math.max(0.55, Math.min(0.80, prof[1]));
+        var lNorm = Math.max(0.60, Math.min(0.72, prof[2]));
+        var sBright = Math.min(0.88, sNorm + 0.08);
+        var lBright = Math.min(0.80, lNorm + 0.08);
+
+        function hue(deg, bright) {
+            return root._hslToHex(deg, bright ? sBright : sNorm, bright ? lBright : lNorm);
+        }
+
+        return {
+            // Blacks
+            color0: role("surface"),
+            color8: role("surface_container_high"),
+            // Reds — M3 error (calibrated for dark mode contrast)
+            color1: tone("error", 50),
+            color9: role("error"),
+            // Greens — fixed hue 140°, primary profile
+            color2: hue(140, false),
+            color10: hue(140, true),
+            // Yellows — fixed hue 48°
+            color3: hue(48, false),
+            color11: hue(48, true),
+            // Blues — fixed hue 212°
+            color4: hue(212, false),
+            color12: hue(212, true),
+            // Magenta — the main accent
+            color5: role("primary"),
+            color13: tone("primary", 80),
+            // Cyans — from tertiary
+            color6: role("tertiary"),
+            color14: tone("tertiary", 80),
+            // Whites
+            color7: role("on_surface_variant"),
+            color15: role("on_surface")
+        };
+    }
+
+    // Hex (#rrggbb) → [h (0-360), s (0-1), l (0-1)]
+    function _hexToHsl(hex) {
+        var r = parseInt(hex.substring(1, 3), 16) / 255;
+        var g = parseInt(hex.substring(3, 5), 16) / 255;
+        var b = parseInt(hex.substring(5, 7), 16) / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h = 0, s = 0, l = (max + min) / 2;
+        if (max !== min) {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h *= 60;
+        }
+        return [h, s, l];
+    }
+
+    // HSL → hex (#rrggbb)
+    function _hslToHex(h, s, l) {
+        h = ((h % 360) + 360) % 360 / 360;
+        s = Math.max(0, Math.min(1, s));
+        l = Math.max(0, Math.min(1, l));
+        function hue2rgb(p, q, t) {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+        var r, g, b;
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var pp = 2 * l - q;
+            r = hue2rgb(pp, q, h + 1/3);
+            g = hue2rgb(pp, q, h);
+            b = hue2rgb(pp, q, h - 1/3);
+        }
+        function toHex(x) {
+            var v = Math.round(x * 255).toString(16);
+            return v.length === 1 ? "0" + v : v;
+        }
+        return "#" + toHex(r) + toHex(g) + toHex(b);
+    }
+
+    // Map a generated primary color to the nearest Tela-circle-<color>-dark
+    // icon theme by hue angle (with a grey fallback for desaturated colors).
+    function _iconThemeForColor(hex) {
+        var hsl = root._hexToHsl(hex);
+        var h = hsl[0], s = hsl[1];
+        if (s < 0.15) return "Tela-circle-grey-dark";
+        if (h < 20 || h >= 340) return "Tela-circle-red-dark";
+        if (h < 45)  return "Tela-circle-orange-dark";
+        if (h < 70)  return "Tela-circle-yellow-dark";
+        if (h < 165) return "Tela-circle-green-dark";
+        if (h < 200) return "Tela-circle-nord-dark";   // teal/cyan range
+        if (h < 255) return "Tela-circle-blue-dark";
+        if (h < 305) return "Tela-circle-purple-dark";
+        return "Tela-circle-pink-dark";
     }
 
     // --- Config generators ---

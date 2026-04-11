@@ -21,7 +21,7 @@ RowLayout {
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontClock
         font.bold: true
-        color: Theme.textPrimary
+        color: Theme.accent
 
         // Update every second
         Timer {
