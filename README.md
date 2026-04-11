@@ -7,7 +7,7 @@ Automated Arch Linux installer with a custom Hyprland + Quickshell "Void Command
 - **CachyOS kernel** (optimized, Clang + ThinLTO, EEVDF scheduler)
 - **BTRFS** with subvolumes (@, @home, @pkg, @log, @snapshots) + Snapper
 - **systemd-boot** bootloader
-- **Hyprland** tiling WM with Void Command theme (8 color schemes)
+- **Hyprland** tiling WM with Void Command theme (8 static color schemes + `auto` — a wallpaper-driven scheme that generates its palette from any image via matugen)
 - **Quickshell** unified desktop shell (bar, launcher, notifications, power menu, sidebar, clipboard, screenshot)
 - **greetd + tuigreet** login manager
 - **Welcome App** for post-install setup — app catalog, common fixes, service toggles
