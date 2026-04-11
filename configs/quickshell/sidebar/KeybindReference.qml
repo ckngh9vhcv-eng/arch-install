@@ -63,6 +63,7 @@ Flickable {
         KeyCategory {
             title: "APPS"
             KeyRow { keys: "SUPER + Space"; action: "Launcher" }
+            KeyRow { keys: "SUPER + Tab"; action: "Overview" }
             KeyRow { keys: "SUPER + B"; action: "Browser" }
             KeyRow { keys: "SUPER + T"; action: "Terminal" }
             KeyRow { keys: "SUPER + F"; action: "Files" }
@@ -76,7 +77,7 @@ Flickable {
             KeyRow { keys: "SUPER + Q"; action: "Close" }
             KeyRow { keys: "SUPER + W"; action: "Float" }
             KeyRow { keys: "SUPER + P"; action: "Fullscreen" }
-            KeyRow { keys: "SUPER + SHIFT + P"; action: "Fake Fullscreen" }
+            KeyRow { keys: "SUPER + SHIFT + P"; action: "Windowed Fullscreen" }
         }
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDim; opacity: 0.3 }
@@ -96,6 +97,20 @@ Flickable {
             KeyRow { keys: "SUPER + 1-9"; action: "Switch" }
             KeyRow { keys: "SUPER + SHIFT + 1-9"; action: "Move To" }
             KeyRow { keys: "SUPER + Scroll"; action: "Cycle" }
+            KeyRow { keys: "SUPER + `"; action: "Scratchpad" }
+            KeyRow { keys: "SUPER + SHIFT + `"; action: "Send to Scratchpad" }
+        }
+
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDim; opacity: 0.3 }
+
+        // Scrolling layout (workspace 5 only)
+        KeyCategory {
+            title: "SCROLLING (WS 5)"
+            KeyRow { keys: "SUPER + [  /  ]"; action: "Scroll Column L / R" }
+            KeyRow { keys: "SUPER + SHIFT + [  /  ]"; action: "Swap Column L / R" }
+            KeyRow { keys: "SUPER + -  /  ="; action: "Narrower / Wider" }
+            KeyRow { keys: "SUPER + \\"; action: "Promote Column" }
+            KeyRow { keys: "SUPER + /"; action: "Fit Visible" }
         }
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDim; opacity: 0.3 }
@@ -106,6 +121,7 @@ Flickable {
             KeyRow { keys: "SUPER + D"; action: "Sidebar" }
             KeyRow { keys: "SUPER + V"; action: "Clipboard" }
             KeyRow { keys: "SUPER + SHIFT + S"; action: "Screenshot" }
+            KeyRow { keys: "SUPER + Print"; action: "Full Screenshot" }
             KeyRow { keys: "SUPER + G"; action: "Game Mode" }
             KeyRow { keys: "SUPER + R"; action: "Record Screen" }
             KeyRow { keys: "SUPER + N"; action: "Cycle Wallpaper" }
@@ -117,9 +133,19 @@ Flickable {
         // Zoom
         KeyCategory {
             title: "ZOOM"
-            KeyRow { keys: "SUPER + ="; action: "Zoom In" }
-            KeyRow { keys: "SUPER + -"; action: "Zoom Out" }
-            KeyRow { keys: "SUPER + 0"; action: "Reset Zoom" }
+            KeyRow { keys: "SUPER + CTRL + ="; action: "Zoom In" }
+            KeyRow { keys: "SUPER + CTRL + -"; action: "Zoom Out" }
+            KeyRow { keys: "SUPER + CTRL + 0"; action: "Reset Zoom" }
+        }
+
+        Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDim; opacity: 0.3 }
+
+        // System hardware keys
+        KeyCategory {
+            title: "SYSTEM"
+            KeyRow { keys: "Vol + / -"; action: "Volume Up / Down" }
+            KeyRow { keys: "Mute"; action: "Toggle Mute" }
+            KeyRow { keys: "Bright + / -"; action: "Brightness Up / Down" }
         }
 
         Rectangle { Layout.fillWidth: true; height: 1; color: Theme.accentDim; opacity: 0.3 }
