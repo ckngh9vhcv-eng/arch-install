@@ -361,7 +361,7 @@ QtObject {
         command: ["sh", "-c", "kill -SIGUSR1 $(pgrep kitty) 2>/dev/null"]
     }
     property var hyprpaperRestartProc: Process {
-        command: ["sh", "-c", "killall hyprpaper 2>/dev/null; sleep 0.3; hyprpaper &"]
+        command: ["sh", "-c", "killall hyprpaper 2>/dev/null; sleep 0.3; setsid -f hyprpaper </dev/null >/dev/null 2>&1"]
     }
     property var hyprBorderProc: Process {
         // command set dynamically in updateAppConfigs
